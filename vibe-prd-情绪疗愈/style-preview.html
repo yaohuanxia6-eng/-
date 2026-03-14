@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>风格方案预览 · 情绪疗愈助手</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@300;400;500&family=Nunito:wght@400;600;700&family=Inter:wght@300;400;500&family=Lora:wght@400;600&family=Playfair+Display:wght@400;600&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; font-family: sans-serif; padding: 40px 20px; }
+
+  .page-title {
+    color: #fff;
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+  .page-subtitle {
+    color: #888;
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 48px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .style-card {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+
+  .style-label {
+    padding: 14px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .style-name { font-size: 15px; font-weight: 600; }
+  .style-en { font-size: 11px; opacity: 0.5; letter-spacing: 0.08em; text-transform: uppercase; }
+  .style-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.05em;
+  }
+
+  .phone-frame {
+    padding: 20px 16px 24px;
+  }
+
+  /* ===== Style A: 深夜暖光 ===== */
+  .style-a {
+    background: #1A1410;
+    color: #F5EDE0;
+  }
+  .style-a .style-label { background: #231A12; }
+  .style-a .style-name { color: #E8A87C; font-family: 'Noto Serif SC', serif; }
+  .style-a .style-badge { background: rgba(232,168,124,0.15); color: #E8A87C; }
+
+  .style-a .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .style-a .greeting {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 18px;
+    color: #F5EDE0;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+  .style-a .date {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    color: rgba(245,237,224,0.4);
+    letter-spacing: 0.05em;
+  }
+  .style-a .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #E8A87C, #C4714A);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .style-a .chat-bubble-ai {
+    background: #2A2018;
+    border: 1px solid rgba(232,168,124,0.15);
+    border-radius: 4px 14px 14px 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    color: rgba(245,237,224,0.85);
+    line-height: 1.7;
+  }
+  .style-a .chat-bubble-user {
+    background: rgba(232,168,124,0.12);
+    border: 1px solid rgba(232,168,124,0.2);
+    border-radius: 14px 4px 14px 14px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    color: #F5EDE0;
+    line-height: 1.7;
+    text-align: right;
+  }
+  .style-a .action-card {
+    background: linear-gradient(135deg, rgba(232,168,124,0.12), rgba(196,113,74,0.08));
+    border: 1px solid rgba(232,168,124,0.25);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .style-a .action-label {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 10px;
+    color: #E8A87C;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .style-a .action-text {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    color: #F5EDE0;
+    line-height: 1.6;
+  }
+  .style-a .input-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #2A2018;
+    border: 1px solid rgba(232,168,124,0.15);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 12px;
+    color: rgba(245,237,224,0.3);
+  }
+  .style-a .send-btn {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, #E8A87C, #C4714A);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; margin-left: auto; flex-shrink: 0;
+  }
+
+  /* ===== Style B: 晴空清澈 ===== */
+  .style-b {
+    background: #F0F6FF;
+    color: #2C3E50;
+  }
+  .style-b .style-label { background: #FFFFFF; }
+  .style-b .style-name { color: #3B7DD8; font-family: 'Nunito', sans-serif; }
+  .style-b .style-badge { background: rgba(59,125,216,0.1); color: #3B7DD8; }
+
+  .style-b .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .style-b .greeting {
+    font-family: 'Nunito', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #2C3E50;
+    line-height: 1.5;
+    margin-bottom: 3px;
+  }
+  .style-b .date {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #8FA8C0;
+    letter-spacing: 0.02em;
+  }
+  .style-b .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, #5B9BD5, #3B7DD8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(59,125,216,0.25);
+  }
+  .style-b .chat-bubble-ai {
+    background: #FFFFFF;
+    border-radius: 4px 16px 16px 16px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #2C3E50;
+    line-height: 1.7;
+    box-shadow: 0 2px 12px rgba(59,125,216,0.08);
+  }
+  .style-b .chat-bubble-user {
+    background: linear-gradient(135deg, #5B9BD5, #3B7DD8);
+    border-radius: 16px 4px 16px 16px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #FFFFFF;
+    line-height: 1.7;
+    text-align: right;
+    box-shadow: 0 4px 16px rgba(59,125,216,0.3);
+  }
+  .style-b .action-card {
+    background: linear-gradient(135deg, #FFF8EC, #FFF3DC);
+    border: 1px solid rgba(255,179,71,0.3);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .style-b .action-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    color: #E8963A;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  .style-b .action-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #2C3E50;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+  .style-b .input-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #FFFFFF;
+    border-radius: 99px;
+    padding: 10px 12px 10px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #B0C4D8;
+    box-shadow: 0 2px 12px rgba(59,125,216,0.1);
+  }
+  .style-b .send-btn {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, #5B9BD5, #3B7DD8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; margin-left: auto; flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(59,125,216,0.35);
+  }
+
+  /* ===== Style C: 深海静谧 ===== */
+  .style-c {
+    background: #1C2B30;
+    color: #E8EEF0;
+  }
+  .style-c .style-label { background: #162228; }
+  .style-c .style-name { color: #A8C5CC; font-family: 'Playfair Display', serif; }
+  .style-c .style-badge { background: rgba(168,197,204,0.12); color: #A8C5CC; }
+
+  .style-c .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .style-c .greeting {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    color: #E8EEF0;
+    line-height: 1.5;
+    margin-bottom: 3px;
+  }
+  .style-c .date {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 11px;
+    color: rgba(232,238,240,0.35);
+    letter-spacing: 0.06em;
+  }
+  .style-c .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #7B9EA6, #4A7A85);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .style-c .chat-bubble-ai {
+    background: #243740;
+    border-left: 2px solid #7B9EA6;
+    border-radius: 0 10px 10px 0;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    color: rgba(232,238,240,0.85);
+    line-height: 1.75;
+  }
+  .style-c .chat-bubble-user {
+    background: rgba(123,158,166,0.15);
+    border: 1px solid rgba(123,158,166,0.2);
+    border-radius: 10px 0 0 10px;
+    border-right: 2px solid rgba(123,158,166,0.4);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    color: #E8EEF0;
+    line-height: 1.75;
+    text-align: right;
+  }
+  .style-c .action-card {
+    background: rgba(232,213,183,0.07);
+    border: 1px solid rgba(232,213,183,0.18);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .style-c .action-label {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 10px;
+    color: #E8D5B7;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .style-c .action-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    color: rgba(232,238,240,0.9);
+    line-height: 1.65;
+  }
+  .style-c .input-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #243740;
+    border: 1px solid rgba(123,158,166,0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 12px;
+    color: rgba(232,238,240,0.25);
+  }
+  .style-c .send-btn {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: rgba(123,158,166,0.25);
+    border: 1px solid rgba(123,158,166,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; margin-left: auto; flex-shrink: 0;
+  }
+
+  /* ===== Style D: 纸本晴天 ===== */
+  .style-d {
+    background: #FBF7F0;
+    color: #3D2F1F;
+  }
+  .style-d .style-label { background: #FFFFFF; border-bottom: 1px solid rgba(139,115,85,0.12); }
+  .style-d .style-name { color: #8B7355; font-family: 'Lora', serif; }
+  .style-d .style-badge { background: rgba(123,174,132,0.12); color: #5A9468; }
+
+  .style-d .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .style-d .greeting {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    color: #3D2F1F;
+    line-height: 1.55;
+    margin-bottom: 3px;
+  }
+  .style-d .date {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 11px;
+    color: rgba(61,47,31,0.35);
+  }
+  .style-d .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #A89070, #8B7355);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(139,115,85,0.2);
+  }
+  .style-d .chat-bubble-ai {
+    background: #FFFFFF;
+    border: 1px solid rgba(139,115,85,0.12);
+    border-radius: 2px 14px 14px 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    color: #4A3828;
+    line-height: 1.8;
+    box-shadow: 0 1px 6px rgba(139,115,85,0.06);
+  }
+  .style-d .chat-bubble-user {
+    background: rgba(139,115,85,0.08);
+    border: 1px solid rgba(139,115,85,0.15);
+    border-radius: 14px 2px 14px 14px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    color: #3D2F1F;
+    line-height: 1.8;
+    text-align: right;
+  }
+  .style-d .action-card {
+    background: rgba(123,174,132,0.08);
+    border: 1px solid rgba(123,174,132,0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .style-d .action-label {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 10px;
+    color: #5A9468;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  .style-d .action-text {
+    font-family: 'Lora', serif;
+    font-size: 13px;
+    color: #3D2F1F;
+    line-height: 1.7;
+  }
+  .style-d .input-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #FFFFFF;
+    border: 1px solid rgba(139,115,85,0.18);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 12px;
+    color: rgba(61,47,31,0.3);
+    box-shadow: 0 1px 4px rgba(139,115,85,0.05);
+  }
+  .style-d .send-btn {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: #8B7355;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; margin-left: auto; flex-shrink: 0;
+  }
+
+  .palette-row {
+    display: flex;
+    gap: 5px;
+    padding: 8px 16px 12px;
+  }
+  .color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.15);
+  }
+  .palette-label {
+    font-size: 9px;
+    padding: 0 16px 10px;
+    letter-spacing: 0.06em;
+    opacity: 0.45;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">风格方案预览</div>
+<div class="page-subtitle">情绪疗愈助手 · MVP界面风格选择 · 点击选择你喜欢的方向</div>
+
+<div class="grid">
+
+  <!-- Style A: 深夜暖光 -->
+  <div class="style-card style-a">
+    <div class="style-label style-a">
+      <div>
+        <div class="style-name">A · 深夜暖光</div>
+        <div class="style-en" style="color:rgba(232,168,124,0.4)">Late Night Warmth</div>
+      </div>
+      <div class="style-badge">沉浸 · 私密 · 温柔</div>
+    </div>
+    <div class="palette-row">
+      <div class="color-dot" style="background:#E8A87C"></div>
+      <div class="color-dot" style="background:#C4714A"></div>
+      <div class="color-dot" style="background:#F2C9A8"></div>
+      <div class="color-dot" style="background:#1A1410"></div>
+      <div class="color-dot" style="background:#2A2018"></div>
+      <div class="color-dot" style="background:#F5EDE0"></div>
+    </div>
+    <div class="palette-label style-a" style="color:rgba(245,237,224,0.4)">#E8A87C · #C4714A · #F2C9A8 · #1A1410 · #2A2018 · #F5EDE0</div>
+    <div class="phone-frame">
+      <div class="top-bar style-a">
+        <div>
+          <div class="greeting">晚上好，今天怎么样？</div>
+          <div class="date">2026年3月14日 · 第12天</div>
+        </div>
+        <div class="avatar">🌙</div>
+      </div>
+      <div class="chat-bubble-ai">
+        昨天你说考试压力很大，今天状态有好一点吗？还是还是有些沉？
+      </div>
+      <div class="chat-bubble-user">
+        还是有点焦虑，不知道为什么复习了还是会担心
+      </div>
+      <div class="chat-bubble-ai">
+        复习了还在担心，这种感觉很常见——不是你复习得不够，可能是焦虑本身在说话，不是事实。能告诉我，你现在最怕的那个结果是什么？
+      </div>
+      <div class="action-card">
+        <div class="action-label">✦ 今日微行动</div>
+        <div class="action-text">把你最担心的事写下来，然后在旁边写一句"就算这发生了，我还是可以的"</div>
+      </div>
+      <div class="input-bar">
+        <span>说说现在的感受…</span>
+        <div class="send-btn">↑</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Style B: 晴空清澈 -->
+  <div class="style-card style-b">
+    <div class="style-label style-b">
+      <div>
+        <div class="style-name">B · 晴空清澈</div>
+        <div class="style-en" style="color:#8FA8C0">Clear Sky Fresh</div>
+      </div>
+      <div class="style-badge" style="background:rgba(59,125,216,0.1);color:#3B7DD8">轻盈 · 明朗 · 积极</div>
+    </div>
+    <div class="palette-row">
+      <div class="color-dot" style="background:#3B7DD8"></div>
+      <div class="color-dot" style="background:#5B9BD5"></div>
+      <div class="color-dot" style="background:#88C5E8"></div>
+      <div class="color-dot" style="background:#FFB347"></div>
+      <div class="color-dot" style="background:#F0F6FF"></div>
+      <div class="color-dot" style="background:#2C3E50;border-color:rgba(0,0,0,0.1)"></div>
+    </div>
+    <div class="palette-label" style="color:#8FA8C0">#3B7DD8 · #5B9BD5 · #88C5E8 · #FFB347 · #F0F6FF · #2C3E50</div>
+    <div class="phone-frame">
+      <div class="top-bar">
+        <div>
+          <div class="greeting" style="font-family:'Nunito',sans-serif;font-size:17px;font-weight:700;color:#2C3E50">晚上好 👋 今天怎么样？</div>
+          <div class="date" style="font-family:'Inter',sans-serif;font-size:11px;color:#8FA8C0">3月14日 · 连续打卡 12 天</div>
+        </div>
+        <div class="avatar" style="background:linear-gradient(135deg,#5B9BD5,#3B7DD8)">🌤</div>
+      </div>
+      <div class="chat-bubble-ai">
+        昨天你说考试压力很大，今天好点了吗？还是还有点沉？
+      </div>
+      <div class="chat-bubble-user">
+        还是有点焦虑，复习了还是会担心
+      </div>
+      <div class="chat-bubble-ai">
+        复习了还在担心，这很常见——焦虑不代表你没准备好，它只是在说话。你最怕的结果是什么？
+      </div>
+      <div class="action-card" style="background:linear-gradient(135deg,#FFF8EC,#FFF3DC);border:1px solid rgba(255,179,71,0.3)">
+        <div class="action-label" style="color:#E8963A">⚡ 今日微行动</div>
+        <div class="action-text" style="font-family:'Inter',sans-serif;font-size:13px;color:#2C3E50">把最担心的事写下来，旁边写"就算这发生了，我还是可以的"</div>
+      </div>
+      <div class="input-bar">
+        <span style="font-family:'Inter',sans-serif;font-size:12px;color:#B0C4D8">说说现在的感受…</span>
+        <div class="send-btn" style="background:linear-gradient(135deg,#5B9BD5,#3B7DD8)">↑</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Style C: 深海静谧 -->
+  <div class="style-card style-c">
+    <div class="style-label style-c">
+      <div>
+        <div class="style-name">C · 深海静谧</div>
+        <div class="style-en" style="color:rgba(168,197,204,0.4)">Deep Sea Calm</div>
+      </div>
+      <div class="style-badge" style="background:rgba(168,197,204,0.1);color:#A8C5CC">沉静 · 克制 · 深邃</div>
+    </div>
+    <div class="palette-row">
+      <div class="color-dot" style="background:#7B9EA6"></div>
+      <div class="color-dot" style="background:#A8C5CC"></div>
+      <div class="color-dot" style="background:#4A7A85"></div>
+      <div class="color-dot" style="background:#E8D5B7"></div>
+      <div class="color-dot" style="background:#1C2B30"></div>
+      <div class="color-dot" style="background:#243740"></div>
+    </div>
+    <div class="palette-label" style="color:rgba(232,238,240,0.3)">#7B9EA6 · #A8C5CC · #4A7A85 · #E8D5B7 · #1C2B30 · #243740</div>
+    <div class="phone-frame">
+      <div class="top-bar">
+        <div>
+          <div class="greeting">晚上好。今天感觉如何？</div>
+          <div class="date">2026.03.14 · DAY 12</div>
+        </div>
+        <div class="avatar">🌊</div>
+      </div>
+      <div class="chat-bubble-ai">
+        昨天聊到考试的压力。今天有没有好一些，还是还是压着？
+      </div>
+      <div class="chat-bubble-user">
+        还是有点焦虑，复习了还是会担心
+      </div>
+      <div class="chat-bubble-ai">
+        复习了还在担心——焦虑不总是缺乏准备的信号，有时它只是在表达。你最怕的那个结果，具体是什么？
+      </div>
+      <div class="action-card">
+        <div class="action-label">TODAY'S MICRO ACTION</div>
+        <div class="action-text">把最担心的事写下来，旁边写一句"就算这发生了，我还是可以的"</div>
+      </div>
+      <div class="input-bar">
+        <span>说说现在的感受…</span>
+        <div class="send-btn">↑</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Style D: 纸本晴天 -->
+  <div class="style-card style-d">
+    <div class="style-label style-d">
+      <div>
+        <div class="style-name">D · 纸本晴天</div>
+        <div class="style-en" style="color:rgba(139,115,85,0.4)">Paper Journal Warm</div>
+      </div>
+      <div class="style-badge">温暖 · 真实 · 人文</div>
+    </div>
+    <div class="palette-row">
+      <div class="color-dot" style="background:#8B7355"></div>
+      <div class="color-dot" style="background:#A89070"></div>
+      <div class="color-dot" style="background:#7BAE84"></div>
+      <div class="color-dot" style="background:#5A9468"></div>
+      <div class="color-dot" style="background:#FBF7F0"></div>
+      <div class="color-dot" style="background:#3D2F1F;border-color:rgba(0,0,0,0.1)"></div>
+    </div>
+    <div class="palette-label" style="color:rgba(61,47,31,0.35)">#8B7355 · #A89070 · #7BAE84 · #5A9468 · #FBF7F0 · #3D2F1F</div>
+    <div class="phone-frame">
+      <div class="top-bar">
+        <div>
+          <div class="greeting">晚上好，今天感觉怎样？</div>
+          <div class="date">3月14日 · 第12天</div>
+        </div>
+        <div class="avatar">☀️</div>
+      </div>
+      <div class="chat-bubble-ai">
+        昨天你说考试压力很大——今天好一点了吗？还是还有点沉？
+      </div>
+      <div class="chat-bubble-user">
+        还是有点焦虑，复习了还是会担心
+      </div>
+      <div class="chat-bubble-ai">
+        复习了还在担心，这很正常。焦虑有时候不是在说"你没准备好"，只是在说"这件事对你很重要"。你最怕的结果是什么？
+      </div>
+      <div class="action-card">
+        <div class="action-label">今日微行动</div>
+        <div class="action-text">把最担心的事写下来，旁边写一句"就算这发生了，我还是可以的"</div>
+      </div>
+      <div class="input-bar">
+        <span>说说现在的感受…</span>
+        <div class="send-btn" style="background:#8B7355;color:#FBF7F0">↑</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center;color:#555;font-size:12px;margin-top:40px;letter-spacing:0.05em">
+  选A/B/C/D，或者告诉我"喜欢A的配色但想要B的字体"
+</div>
+
+</body>
+</html>
