@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary:      #8B7355;
+  --color-accent:       #7BAE84;
+  --color-background:   #FBF7F0;
+  --color-surface:      #FFFFFF;
+  --color-text-primary: #3D2F1F;
+  --color-border:       rgba(139,115,85,0.15);
+}
+
+body {
+  background-color: #FBF7F0;
+  color: #3D2F1F;
+  font-family: 'Noto Sans SC', 'PingFang SC', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: 'Lora', 'Noto Serif SC', Georgia, serif;
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
