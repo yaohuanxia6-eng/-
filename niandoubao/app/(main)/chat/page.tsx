@@ -152,6 +152,14 @@ export default function ChatPage() {
 
       {/* 对话区 */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-4 pb-2">
+        {/* AI 数据告知 */}
+        <div className="bg-surface-2 rounded-btn px-3 py-2 mb-4 text-center">
+          <p className="text-label text-text-muted leading-relaxed">
+            对话内容由 AI 生成，仅供参考，不构成专业建议。<br />
+            你的消息会经第三方 AI 服务处理，详见<a href="/privacy" className="underline underline-offset-2 text-primary">隐私政策</a>
+          </p>
+        </div>
+
         {/* 日期标签 */}
         <div className="flex items-center gap-2 mb-5">
           <div className="flex-1 h-px bg-primary/10" />
@@ -176,11 +184,11 @@ export default function ChatPage() {
 
           {/* 等待 AI 响应（还没有任何 token）*/}
           {isStreaming && !streamingContent && (
-            <div className="flex gap-2 items-end animate-bubble-in">
-              <div className="w-7 h-7 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
-                <span className="text-white text-label font-medium">豆</span>
+            <div className="flex gap-2.5 items-start animate-bubble-in">
+              <div className="w-9 h-9 rounded-full bg-primary flex-shrink-0 flex items-center justify-center mt-0.5">
+                <span className="text-white text-[14px] font-medium">豆</span>
               </div>
-              <div className="bg-surface border border-border rounded-[4px_14px_14px_14px] px-4 py-3 shadow-card">
+              <div className="bg-surface border border-border rounded-[4px_16px_16px_16px] px-4 py-3 shadow-card">
                 <span className="flex gap-1">
                   <span className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <span className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />

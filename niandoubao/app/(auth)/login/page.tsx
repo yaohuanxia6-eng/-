@@ -22,7 +22,7 @@ export default function LoginPage() {
 
         {/* 底部说明 */}
         <p className="text-center text-[11px] text-[#B8A898] mt-6 leading-relaxed px-4">
-          登录即表示同意服务条款和隐私政策<br />
+          登录即表示同意<a href="/terms" className="underline underline-offset-2">用户协议</a>和<a href="/privacy" className="underline underline-offset-2">隐私政策</a><br />
           粘豆包是情绪支持工具，不提供心理诊断
         </p>
       </div>

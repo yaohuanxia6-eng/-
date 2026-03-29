@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { styles as s } from '@/lib/styles'
 import { createClient } from '@/lib/supabase/client'
@@ -17,6 +18,13 @@ export default function SettingsPage() {
   const [reminderEnabled, setReminderEnabled] = useState(true)
   const [saved, setSaved] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showPasswordChange, setShowPasswordChange] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordMsg, setPasswordMsg] = useState('')
+  const [changingPassword, setChangingPassword] = useState(false)
 
   // 获取当前用户信息
   useEffect(() => {
@@ -24,7 +32,6 @@ export default function SettingsPage() {
       if (user?.email) {
         setUserEmail(user.email)
         setReminderEmail(user.email)
-        // 从邮箱前缀生成默认昵称
         setNickname(user.email.split('@')[0])
       }
     })
@@ -42,6 +49,44 @@ export default function SettingsPage() {
     router.refresh()
   }
 
+  async function handleChangePassword() {
+    if (!currentPassword || !newPassword) return
+    if (newPassword.length < 6) {
+      setPasswordMsg('新密码至少需要6位')
+      return
+    }
+    setChangingPassword(true)
+    setPasswordMsg('')
+    const res = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+    const result = await res.json()
+    if (res.ok) {
+      setPasswordMsg('密码修改成功')
+      setCurrentPassword('')
+      setNewPassword('')
+      setTimeout(() => { setShowPasswordChange(false); setPasswordMsg('') }, 2000)
+    } else {
+      setPasswordMsg(result.error || '修改失败')
+    }
+    setChangingPassword(false)
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true)
+    const res = await fetch('/api/auth/delete', { method: 'DELETE' })
+    if (res.ok) {
+      await supabase.auth.signOut()
+      router.push('/login')
+      router.refresh()
+    } else {
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }
+
   return (
     <div className={s.page}>
       <AppHeader title="设置" />
@@ -52,7 +97,6 @@ export default function SettingsPage() {
         <section>
           <h2 className="text-label uppercase tracking-widest text-text-muted mb-3">个人信息</h2>
           <div className="bg-surface rounded-card shadow-card p-4 space-y-4">
-            {/* 头像 */}
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary text-title-md font-serif font-semibold">
                 {(nickname || '?').charAt(0)}
@@ -62,8 +106,6 @@ export default function SettingsPage() {
                 <p className="text-body-sm text-text-muted">{userEmail}</p>
               </div>
             </div>
-
-            {/* 昵称 */}
             <div>
               <label className="block text-body-sm text-text-secondary mb-1.5">昵称</label>
               <input
@@ -73,6 +115,53 @@ export default function SettingsPage() {
                 placeholder="你想让我怎么称呼你？"
               />
             </div>
+
+            {/* 修改密码 */}
+            {!showPasswordChange ? (
+              <button
+                onClick={() => setShowPasswordChange(true)}
+                className="text-body-sm text-primary hover:underline underline-offset-2"
+              >
+                修改密码
+              </button>
+            ) : (
+              <div className="space-y-3 pt-2 border-t border-border animate-card-in">
+                <input
+                  className={s.input}
+                  type="password"
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="当前密码"
+                />
+                <input
+                  className={s.input}
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="新密码（至少6位）"
+                />
+                {passwordMsg && (
+                  <p className={`text-body-sm ${passwordMsg.includes('成功') ? 'text-accent-dark' : 'text-crisis'}`}>
+                    {passwordMsg}
+                  </p>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setShowPasswordChange(false); setPasswordMsg('') }}
+                    className={`flex-1 ${s.btnSecondary}`}
+                  >
+                    取消
+                  </button>
+                  <button
+                    onClick={handleChangePassword}
+                    disabled={changingPassword || !currentPassword || !newPassword}
+                    className={`flex-1 ${s.btnPrimary} disabled:opacity-40`}
+                  >
+                    {changingPassword ? '修改中...' : '确认修改'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -80,7 +169,6 @@ export default function SettingsPage() {
         <section>
           <h2 className="text-label uppercase tracking-widest text-text-muted mb-3">每日提醒</h2>
           <div className="bg-surface rounded-card shadow-card p-4 space-y-4">
-            {/* 开关 */}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-body-md text-text-primary font-medium">开启每日提醒</p>
@@ -99,8 +187,6 @@ export default function SettingsPage() {
                 />
               </button>
             </div>
-
-            {/* 提醒邮箱 */}
             <div className={`space-y-4 transition-opacity ${reminderEnabled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
               <div>
                 <label className="block text-body-sm text-text-secondary mb-1.5">提醒邮箱</label>
@@ -129,16 +215,18 @@ export default function SettingsPage() {
         <section>
           <h2 className="text-label uppercase tracking-widest text-text-muted mb-3">关于</h2>
           <div className="bg-surface rounded-card shadow-card divide-y divide-border">
-            {[
-              { label: '版本', value: 'v0.1.0 Beta' },
-              { label: '隐私政策', value: '查看 →' },
-              { label: '用户协议', value: '查看 →' },
-            ].map(item => (
-              <div key={item.label} className="flex items-center justify-between px-4 py-3">
-                <span className="text-body-md text-text-primary">{item.label}</span>
-                <span className="text-body-sm text-text-muted">{item.value}</span>
-              </div>
-            ))}
+            <div className="flex items-center justify-between px-4 py-3">
+              <span className="text-body-md text-text-primary">版本</span>
+              <span className="text-body-sm text-text-muted">v0.1.0 Beta</span>
+            </div>
+            <Link href="/privacy" className="flex items-center justify-between px-4 py-3">
+              <span className="text-body-md text-text-primary">隐私政策</span>
+              <span className="text-body-sm text-text-muted">查看 →</span>
+            </Link>
+            <Link href="/terms" className="flex items-center justify-between px-4 py-3">
+              <span className="text-body-md text-text-primary">用户协议</span>
+              <span className="text-body-sm text-text-muted">查看 →</span>
+            </Link>
           </div>
         </section>
 
@@ -158,6 +246,36 @@ export default function SettingsPage() {
         >
           {loggingOut ? '退出中...' : '退出登录'}
         </button>
+
+        {/* 删除账户 */}
+        {!showDeleteConfirm ? (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-full py-2 text-body-sm text-text-muted hover:text-crisis transition-colors"
+          >
+            删除账户
+          </button>
+        ) : (
+          <div className="bg-crisis-bg border border-crisis/20 rounded-card p-4 space-y-3 animate-card-in">
+            <p className="text-body-sm text-text-primary font-medium">确定要删除账户吗？</p>
+            <p className="text-body-sm text-text-secondary">此操作不可撤销，你的所有数据将被永久删除。</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className={`flex-1 ${s.btnSecondary}`}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="flex-1 bg-crisis text-white rounded-btn px-4 py-2.5 text-body-sm font-medium active:scale-95 transition-transform disabled:opacity-50"
+              >
+                {deleting ? '删除中...' : '确认删除'}
+              </button>
+            </div>
+          </div>
+        )}
 
         <p className="text-center text-body-sm text-text-muted pb-6">
           粘豆包会记住你 🫘
