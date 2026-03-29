@@ -6,3 +6,9 @@ files_to_push.json
 
 # Environment variables
 .env*.local
+.env
+api/zhandoubao/.env
+
+# Python
+__pycache__/
+*.pyc
