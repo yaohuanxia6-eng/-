@@ -1,19 +1,45 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { styles as s } from '@/lib/styles'
+import { createClient } from '@/lib/supabase/client'
 
 export default function SettingsPage() {
-  const [nickname, setNickname] = useState('小鱼')
-  const [reminderEmail, setReminderEmail] = useState('xiaoyu@163.com')
+  const router = useRouter()
+  const supabase = createClient()
+
+  const [userEmail, setUserEmail] = useState('')
+  const [nickname, setNickname] = useState('')
+  const [reminderEmail, setReminderEmail] = useState('')
   const [reminderTime, setReminderTime] = useState('20:00')
   const [reminderEnabled, setReminderEnabled] = useState(true)
   const [saved, setSaved] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
+
+  // 获取当前用户信息
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.email) {
+        setUserEmail(user.email)
+        setReminderEmail(user.email)
+        // 从邮箱前缀生成默认昵称
+        setNickname(user.email.split('@')[0])
+      }
+    })
+  }, [supabase.auth])
 
   function handleSave() {
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+  }
+
+  async function handleLogout() {
+    setLoggingOut(true)
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
   }
 
   return (
@@ -29,11 +55,11 @@ export default function SettingsPage() {
             {/* 头像 */}
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary text-title-md font-serif font-semibold">
-                {nickname.charAt(0)}
+                {(nickname || '?').charAt(0)}
               </div>
               <div>
-                <p className="text-body-md text-text-primary font-medium">{nickname}</p>
-                <p className="text-body-sm text-text-muted">{reminderEmail}</p>
+                <p className="text-body-md text-text-primary font-medium">{nickname || '加载中...'}</p>
+                <p className="text-body-sm text-text-muted">{userEmail}</p>
               </div>
             </div>
 
@@ -119,14 +145,18 @@ export default function SettingsPage() {
         {/* 保存按钮 */}
         <button
           onClick={handleSave}
-          className={`w-full ${s.btnPrimary} ${saved ? 'bg-accent' : ''}`}
+          className={`w-full ${s.btnPrimary} transition-all duration-300 ${saved ? 'bg-accent shadow-none' : ''}`}
         >
           {saved ? '✓ 已保存' : '保存设置'}
         </button>
 
         {/* 退出登录 */}
-        <button className="w-full py-3 text-body-md text-text-muted hover:text-crisis transition-colors">
-          退出登录
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full bg-surface rounded-card border border-border py-3 text-body-md text-text-muted hover:border-crisis/20 hover:text-crisis transition-all duration-200 active:scale-[0.98]"
+        >
+          {loggingOut ? '退出中...' : '退出登录'}
         </button>
 
         <p className="text-center text-body-sm text-text-muted pb-6">

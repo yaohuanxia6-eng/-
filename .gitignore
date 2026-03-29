@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# Sensitive files
+files_to_push.json
+
+# Environment variables
+.env*.local

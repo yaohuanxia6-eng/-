@@ -6,6 +6,7 @@ import { ChatInput } from '@/components/chat/ChatInput'
 import { MicroActionCard } from '@/components/chat/MicroActionCard'
 import { CrisisCard } from '@/components/chat/CrisisCard'
 import { Message } from '@/types'
+import { createClient } from '@/lib/supabase/client'
 
 // 今天的开场白（第一次打开）
 const OPENING: Message = {
@@ -16,6 +17,7 @@ const OPENING: Message = {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([OPENING])
+  const [nickname, setNickname] = useState('我')
   // 最新的 AI 消息（流式追加中）
   const [streamingContent, setStreamingContent] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
@@ -24,6 +26,16 @@ export default function ChatPage() {
   const [actionDone, setActionDone] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+
+  // 获取用户昵称
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.email) {
+        setNickname(user.email.split('@')[0])
+      }
+    })
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -135,16 +147,16 @@ export default function ChatPage() {
   const dateStr = `${today.getMonth() + 1}月${today.getDate()}日`
 
   return (
-    <div className="flex flex-col h-screen bg-[#FBF7F0]">
-      <AppHeader nickname="小豆包" showSettings />
+    <div className="flex flex-col h-screen bg-background">
+      <AppHeader nickname={nickname} showSettings />
 
       {/* 对话区 */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-4 pb-2">
         {/* 日期标签 */}
         <div className="flex items-center gap-2 mb-5">
-          <div className="flex-1 h-px bg-[rgba(139,115,85,0.1)]" />
-          <span className="text-[11px] text-[#B8A898] px-2">{dateStr}</span>
-          <div className="flex-1 h-px bg-[rgba(139,115,85,0.1)]" />
+          <div className="flex-1 h-px bg-primary/10" />
+          <span className="text-label text-text-muted px-2">{dateStr}</span>
+          <div className="flex-1 h-px bg-primary/10" />
         </div>
 
         {/* 对话气泡 */}
@@ -164,15 +176,15 @@ export default function ChatPage() {
 
           {/* 等待 AI 响应（还没有任何 token）*/}
           {isStreaming && !streamingContent && (
-            <div className="flex gap-2 items-end">
-              <div className="w-7 h-7 rounded-full bg-[#8B7355] flex-shrink-0 flex items-center justify-center">
-                <span className="text-white text-[11px]">豆</span>
+            <div className="flex gap-2 items-end animate-bubble-in">
+              <div className="w-7 h-7 rounded-full bg-primary flex-shrink-0 flex items-center justify-center">
+                <span className="text-white text-label font-medium">豆</span>
               </div>
-              <div className="bg-white border border-[rgba(139,115,85,0.15)] rounded-[4px_14px_14px_14px] px-4 py-3 shadow-[0_1px_6px_rgba(139,115,85,0.08)]">
+              <div className="bg-surface border border-border rounded-[4px_14px_14px_14px] px-4 py-3 shadow-card">
                 <span className="flex gap-1">
-                  <span className="w-1.5 h-1.5 bg-[#B8A898] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 bg-[#B8A898] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-1.5 h-1.5 bg-[#B8A898] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 bg-text-muted rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </span>
               </div>
             </div>

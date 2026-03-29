@@ -1,146 +1,165 @@
 'use client'
 import { useState } from 'react'
-import { Mail, Phone, Send, ChevronRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { User, Lock, ChevronRight, UserPlus } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export function LoginForm() {
-  const [tab, setTab] = useState<'email' | 'phone'>('email')
+  const router = useRouter()
+  const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [otp, setOtp] = useState('')
-  const [otpSent, setOtpSent] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
-  const [countdown, setCountdown] = useState(0)
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  function startCountdown() {
-    setCountdown(60)
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) { clearInterval(timer); return 0 }
-        return prev - 1
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email || !password) return
+
+    setLoading(true)
+    setError('')
+
+    const supabase = createClient()
+
+    if (isSignUp) {
+      // 注册：调用服务端 API，用管理员权限创建已确认用户
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       })
-    }, 1000)
-  }
+      const result = await res.json()
+      if (!res.ok) {
+        setError(result.error || '注册失败')
+        setLoading(false)
+        return
+      }
+      // 注册成功后自动登录
+      const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (autoLoginError) {
+        setError('注册成功，请切换到登录页登录')
+        setLoading(false)
+        return
+      }
+    } else {
+      // 登录
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (signInError) {
+        setError(
+          signInError.message.includes('Invalid login')
+            ? '账户名或密码不对，再试试？'
+            : `登录失败：${signInError.message}`
+        )
+        setLoading(false)
+        return
+      }
+    }
 
-  function handleSendOtp() {
-    if (!phone || countdown > 0) return
-    setOtpSent(true)
-    startCountdown()
-  }
-
-  function handleSendMagicLink() {
-    if (!email) return
-    setEmailSent(true)
+    router.push('/chat')
+    router.refresh()
   }
 
   return (
     <div className="w-full">
-      {/* Tab 切换 */}
+      {/* 模式切换 */}
       <div className="flex bg-[#F5EFE6] rounded-[10px] p-1 mb-6">
         <button
-          onClick={() => setTab('email')}
+          type="button"
+          onClick={() => { setIsSignUp(false); setError('') }}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-[13px] font-medium transition-colors ${
-            tab === 'email' ? 'bg-white text-[#8B7355] shadow-sm' : 'text-[#B8A898]'
+            !isSignUp ? 'bg-white text-[#8B7355] shadow-sm' : 'text-[#B8A898]'
           }`}
         >
-          <Mail size={14} />
-          邮箱登录
+          <User size={14} />
+          登录
         </button>
         <button
-          onClick={() => setTab('phone')}
+          type="button"
+          onClick={() => { setIsSignUp(true); setError('') }}
           className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[8px] text-[13px] font-medium transition-colors ${
-            tab === 'phone' ? 'bg-white text-[#8B7355] shadow-sm' : 'text-[#B8A898]'
+            isSignUp ? 'bg-white text-[#8B7355] shadow-sm' : 'text-[#B8A898]'
           }`}
         >
-          <Phone size={14} />
-          手机登录
+          <UserPlus size={14} />
+          注册
         </button>
       </div>
 
-      {/* 邮箱 Tab */}
-      {tab === 'email' && (
-        <div className="space-y-3">
-          {!emailSent ? (
-            <>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="输入你的邮箱（163 / QQ / Gmail）"
-                className="w-full bg-white border border-[rgba(139,115,85,0.18)] rounded-[10px] px-4 py-3 text-[14px] text-[#3D2F1F] placeholder:text-[#B8A898] focus:outline-none focus:border-[#A89070] transition-colors"
-              />
-              <button
-                onClick={handleSendMagicLink}
-                disabled={!email}
-                className="w-full bg-[#8B7355] text-white rounded-[10px] py-3 text-[14px] font-medium flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98] transition-transform shadow-[0_2px_8px_rgba(139,115,85,0.25)]"
-              >
-                <Send size={14} />
-                发送登录链接
-              </button>
-            </>
-          ) : (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 bg-[rgba(123,174,132,0.15)] rounded-full flex items-center justify-center mx-auto mb-3">
-                <Mail size={22} className="text-[#5A9468]" />
-              </div>
-              <p className="text-[14px] text-[#3D2F1F] font-medium mb-1">链接已发送</p>
-              <p className="text-[13px] text-[#7A6350]">请查收 <span className="font-medium">{email}</span> 的邮件</p>
-              <p className="text-[12px] text-[#B8A898] mt-2">点击邮件中的链接即可登录</p>
-              <button onClick={() => setEmailSent(false)} className="text-[12px] text-[#8B7355] mt-4 underline underline-offset-2">
-                重新发送
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 手机 Tab */}
-      {tab === 'phone' && (
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <div className="bg-white border border-[rgba(139,115,85,0.18)] rounded-[10px] px-3 py-3 text-[14px] text-[#7A6350] flex-shrink-0">
-              +86
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        {/* 账户名 */}
+        <div>
+          <div className="relative">
+            <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#B8A898]" />
             <input
-              type="tel"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              placeholder="输入手机号"
-              className="flex-1 bg-white border border-[rgba(139,115,85,0.18)] rounded-[10px] px-4 py-3 text-[14px] text-[#3D2F1F] placeholder:text-[#B8A898] focus:outline-none focus:border-[#A89070] transition-colors"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="输入账户名"
+              className="w-full bg-white border border-[rgba(139,115,85,0.18)] rounded-[10px] pl-10 pr-4 py-3 text-[14px] text-[#3D2F1F] placeholder:text-[#B8A898] focus:outline-none focus:border-[#A89070] transition-colors"
             />
           </div>
-
-          {!otpSent ? (
-            <button
-              onClick={handleSendOtp}
-              disabled={!phone || countdown > 0}
-              className="w-full bg-[#8B7355] text-white rounded-[10px] py-3 text-[14px] font-medium disabled:opacity-40 active:scale-[0.98] transition-transform shadow-[0_2px_8px_rgba(139,115,85,0.25)]"
-            >
-              {countdown > 0 ? `${countdown}s 后重发` : '发送验证码'}
-            </button>
-          ) : (
-            <>
-              <input
-                type="text"
-                value={otp}
-                onChange={e => setOtp(e.target.value)}
-                placeholder="输入6位验证码"
-                maxLength={6}
-                className="w-full bg-white border border-[rgba(139,115,85,0.18)] rounded-[10px] px-4 py-3 text-[14px] text-[#3D2F1F] placeholder:text-[#B8A898] focus:outline-none focus:border-[#A89070] transition-colors tracking-widest"
-              />
-              <button
-                disabled={otp.length !== 6}
-                className="w-full bg-[#8B7355] text-white rounded-[10px] py-3 text-[14px] font-medium flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98] transition-transform shadow-[0_2px_8px_rgba(139,115,85,0.25)]"
-              >
-                登录
-                <ChevronRight size={16} />
-              </button>
-              <button onClick={handleSendOtp} disabled={countdown > 0} className="text-center w-full text-[12px] text-[#B8A898]">
-                {countdown > 0 ? `${countdown}s 后可重发` : '重新发送验证码'}
-              </button>
-            </>
+          {isSignUp && (
+            <p className="text-[11px] text-[#B8A898] mt-1.5 ml-1">格式：名字@任意域名，如 xiaodou@qq.com</p>
           )}
         </div>
-      )}
+
+        {/* 密码 */}
+        <div className="relative">
+          <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#B8A898]" />
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder={isSignUp ? '设置密码（至少6位）' : '输入密码'}
+            className="w-full bg-white border border-[rgba(139,115,85,0.18)] rounded-[10px] pl-10 pr-4 py-3 text-[14px] text-[#3D2F1F] placeholder:text-[#B8A898] focus:outline-none focus:border-[#A89070] transition-colors"
+          />
+        </div>
+
+        {/* 错误提示 */}
+        {error && (
+          <p className="text-[13px] text-[#D4634B] bg-[rgba(212,99,75,0.08)] rounded-[8px] px-3 py-2">
+            {error}
+          </p>
+        )}
+
+        {/* 提交按钮 */}
+        <button
+          type="submit"
+          disabled={!email || !password || loading}
+          className="w-full bg-[#8B7355] text-white rounded-[10px] py-3 text-[14px] font-medium flex items-center justify-center gap-2 disabled:opacity-40 active:scale-[0.98] transition-transform shadow-[0_2px_8px_rgba(139,115,85,0.25)]"
+        >
+          {loading ? (
+            <span className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </span>
+          ) : (
+            <>
+              {isSignUp ? '注册并进入' : '登录'}
+              <ChevronRight size={16} />
+            </>
+          )}
+        </button>
+      </form>
+
+      {/* 底部提示 */}
+      <p className="text-center text-[12px] text-[#B8A898] mt-4">
+        {isSignUp ? '已有账号？' : '还没有账号？'}
+        <button
+          type="button"
+          onClick={() => { setIsSignUp(!isSignUp); setError('') }}
+          className="text-[#8B7355] ml-1 underline underline-offset-2"
+        >
+          {isSignUp ? '去登录' : '去注册'}
+        </button>
+      </p>
     </div>
   )
 }
