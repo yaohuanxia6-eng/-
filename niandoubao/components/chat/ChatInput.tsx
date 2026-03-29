@@ -37,8 +37,8 @@ export function ChatInput({ onSend, disabled, placeholder = '说说现在的感�
   }
 
   return (
-    <div className="px-4 py-3 bg-[#FBF7F0] border-t border-[rgba(139,115,85,0.1)]">
-      <div className="flex gap-2 items-end bg-white border border-[rgba(139,115,85,0.18)] rounded-[12px] px-3 py-2 shadow-[0_1px_4px_rgba(139,115,85,0.05)]">
+    <div className="px-4 py-3 bg-background border-t border-border pb-[max(12px,env(safe-area-inset-bottom))]">
+      <div className="flex gap-2 items-end bg-surface border border-border-dark rounded-card px-3 py-2 shadow-input transition-all duration-200 focus-within:ring-1 focus-within:ring-primary/20 focus-within:border-primary-light">
         <textarea
           ref={textareaRef}
           value={value}
@@ -47,17 +47,17 @@ export function ChatInput({ onSend, disabled, placeholder = '说说现在的感�
           disabled={disabled}
           placeholder={disabled ? '粘豆包正在思考…' : placeholder}
           rows={1}
-          className="flex-1 resize-none bg-transparent text-[14px] text-[#3D2F1F] placeholder:text-[#B8A898] focus:outline-none leading-[1.6] py-1 max-h-24 disabled:opacity-50"
+          className="flex-1 resize-none bg-transparent text-body-md text-text-primary placeholder:text-text-muted focus:outline-none leading-[1.6] py-1 max-h-24 disabled:opacity-50"
         />
         <button
           onClick={handleSend}
           disabled={disabled || !value.trim()}
-          className="w-8 h-8 rounded-full bg-[#8B7355] flex items-center justify-center flex-shrink-0 mb-0.5 disabled:opacity-30 active:scale-95 transition-transform"
+          className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0 disabled:opacity-30 active:scale-90 hover:bg-primary-dark transition-all duration-200"
         >
-          <ArrowUp size={16} className="text-white" />
+          <ArrowUp size={18} className="text-white" />
         </button>
       </div>
-      <p className="text-center text-[10px] text-[#B8A898] mt-2">Enter 发送 · Shift+Enter 换行</p>
+      <p className="text-center text-label text-text-muted mt-2">Enter 发送 · Shift+Enter 换行</p>
     </div>
   )
 }

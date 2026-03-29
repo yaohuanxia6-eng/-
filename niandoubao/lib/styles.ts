@@ -5,15 +5,15 @@ export const styles = {
 
   card: 'bg-surface rounded-card shadow-card border border-border p-4',
 
-  bubbleAI:   'bg-surface border border-border rounded-[4px_14px_14px_14px] px-4 py-3 text-[14px] leading-[1.8] text-text-primary shadow-card max-w-[85%]',
-  bubbleUser: 'bg-[rgba(139,115,85,0.08)] border border-[rgba(139,115,85,0.25)] rounded-[14px_4px_14px_14px] px-4 py-3 text-[14px] leading-[1.8] text-text-primary ml-auto max-w-[85%]',
+  bubbleAI:   'bg-surface border border-border rounded-[4px_14px_14px_14px] px-4 py-3 text-body-md text-text-primary shadow-card max-w-[85%]',
+  bubbleUser: 'bg-primary/[0.08] border border-border-dark rounded-[14px_4px_14px_14px] px-4 py-3 text-body-md text-text-primary ml-auto max-w-[85%]',
 
-  btnPrimary:   'bg-primary text-white rounded-btn px-4 py-2.5 text-[13px] font-medium shadow-btn hover:bg-primary-dark transition-colors active:scale-95',
-  btnSecondary: 'bg-surface border border-border text-text-primary rounded-btn px-4 py-2.5 text-[13px] hover:bg-surface-2 transition-colors',
-  btnText:      'text-primary text-[13px] hover:underline underline-offset-2',
+  btnPrimary:   'bg-primary text-white rounded-btn px-4 py-2.5 text-body-sm font-medium shadow-btn hover:bg-primary-dark transition-all duration-200 active:scale-95',
+  btnSecondary: 'bg-surface border border-border text-text-primary rounded-btn px-4 py-2.5 text-body-sm hover:bg-surface-2 transition-colors',
+  btnText:      'text-primary text-body-sm hover:underline underline-offset-2',
 
-  input: 'bg-surface border border-border rounded-input px-4 py-3 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-light w-full transition-colors',
+  input: 'bg-surface border border-border rounded-input px-4 py-3 text-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-light focus:ring-1 focus:ring-primary/20 w-full transition-all duration-200',
 
-  actionCard: 'bg-[rgba(123,174,132,0.08)] border border-[rgba(123,174,132,0.2)] rounded-card p-4',
-  crisisCard: 'bg-[#FEF2F2] border border-[rgba(192,57,43,0.2)] rounded-card p-4',
+  actionCard: 'bg-accent/[0.08] border border-accent/20 rounded-card p-4',
+  crisisCard: 'bg-crisis-bg border border-crisis/20 rounded-card p-4',
 }

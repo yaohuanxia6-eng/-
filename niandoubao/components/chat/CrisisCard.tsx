@@ -7,28 +7,28 @@ interface CrisisCardProps {
 
 export function CrisisCard({ onDismiss }: CrisisCardProps) {
   return (
-    <div className="px-4 py-3 bg-[#FBF7F0] border-t border-[rgba(139,115,85,0.1)]">
-      <div className="bg-[#FEF2F2] border border-[rgba(192,57,43,0.18)] rounded-[12px] p-4">
+    <div className="px-4 py-3 bg-background border-t border-border pb-[max(12px,env(safe-area-inset-bottom))]">
+      <div className="bg-crisis-bg border border-crisis/[0.18] rounded-card p-4 animate-card-in">
         <div className="flex items-center gap-2 mb-2">
-          <Heart size={14} className="text-[#C0392B]" fill="currentColor" />
-          <h3 className="font-serif text-[15px] text-[#C0392B] font-semibold">我在这里陪着你</h3>
+          <Heart size={14} className="text-crisis" fill="currentColor" />
+          <h3 className="font-serif text-title-sm text-crisis">我在这里陪着你</h3>
         </div>
-        <p className="text-[13px] text-[#3D2F1F] leading-[1.8] mb-3">
+        <p className="text-body-sm text-text-primary leading-[1.8] mb-3">
           听起来你现在很难受，感谢你愿意告诉我。这种时刻，和专业的人说说话会更有帮助。
         </p>
         <div className="space-y-2 mb-3">
-          <a href="tel:4001619995" className="flex items-center justify-between bg-white rounded-[8px] px-3 py-2.5 border border-[rgba(192,57,43,0.12)]">
-            <span className="text-[13px] text-[#3D2F1F]">全国心理援助热线</span>
-            <span className="text-[13px] font-medium text-[#C0392B]">400-161-9995</span>
+          <a href="tel:4001619995" className="flex items-center justify-between bg-surface rounded-btn px-3 py-2.5 border border-crisis/[0.12] hover:shadow-card active:scale-[0.98] transition-all duration-200">
+            <span className="text-body-sm text-text-primary">全国心理援助热线</span>
+            <span className="text-body-sm font-medium text-crisis">400-161-9995</span>
           </a>
-          <a href="tel:01082951332" className="flex items-center justify-between bg-white rounded-[8px] px-3 py-2.5 border border-[rgba(192,57,43,0.12)]">
-            <span className="text-[13px] text-[#3D2F1F]">北京心理危机中心</span>
-            <span className="text-[13px] font-medium text-[#C0392B]">010-82951332</span>
+          <a href="tel:01082951332" className="flex items-center justify-between bg-surface rounded-btn px-3 py-2.5 border border-crisis/[0.12] hover:shadow-card active:scale-[0.98] transition-all duration-200">
+            <span className="text-body-sm text-text-primary">北京心理危机中心</span>
+            <span className="text-body-sm font-medium text-crisis">010-82951332</span>
           </a>
         </div>
-        <p className="text-[11px] text-[#B8A898] mb-2">粘豆包不是心理医生，但这些人可以帮你</p>
+        <p className="text-label text-text-muted mb-2">粘豆包不是心理医生，但这些人可以帮你</p>
         {onDismiss && (
-          <button onClick={onDismiss} className="text-[12px] text-[#B8A898] underline underline-offset-2">
+          <button onClick={onDismiss} className="text-body-sm text-text-muted underline underline-offset-2 hover:text-text-secondary transition-colors duration-200">
             我没事，继续聊
           </button>
         )}

@@ -25,6 +25,7 @@ const config: Config = {
         border:        'rgba(139,115,85,0.15)',
         'border-dark': 'rgba(139,115,85,0.25)',
         crisis: '#C0392B',
+        'crisis-bg': '#FEF2F2',
       },
       fontFamily: {
         serif: ['"Lora"', '"Noto Serif SC"', 'Georgia', 'serif'],
@@ -50,6 +51,7 @@ const config: Config = {
         'card':       '0 1px 6px rgba(139,115,85,0.08), 0 4px 16px rgba(139,115,85,0.04)',
         'card-hover': '0 4px 16px rgba(139,115,85,0.14)',
         'btn':        '0 2px 8px rgba(139,115,85,0.2)',
+        'input':      '0 1px 4px rgba(139,115,85,0.05)',
       },
       spacing: {
         'page-x': '20px',
