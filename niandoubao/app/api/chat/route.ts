@@ -1,18 +1,19 @@
-// app/api/chat/route.ts — Kimi 流式对话接口
+// app/api/chat/route.ts — Kimi 流式对话接口（含消息持久化）
 
 import { NextRequest, NextResponse } from 'next/server'
 import { aiClient, CHAT_MODEL } from '@/lib/deepseek/client'
 import { buildChatSystemPrompt } from '@/lib/deepseek/prompts'
 import { detectCrisis } from '@/lib/crisis/detector'
-import { MemoryFact } from '@/types'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { EmotionType, MemoryFact } from '@/types'
 
 export const runtime = 'nodejs'
 
 // 简易内存频率限制：每用户每分钟最多 10 次请求
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 const RATE_LIMIT = 10
-const RATE_WINDOW = 60 * 1000 // 1 分钟
+const RATE_WINDOW = 60 * 1000
 
 function checkRateLimit(userId: string): boolean {
   const now = Date.now()
@@ -26,27 +27,51 @@ function checkRateLimit(userId: string): boolean {
   return true
 }
 
+/** 从 AI 回复中推断情绪类型（AI 在步骤 4 会明确命名情绪） */
+function detectEmotionFromText(text: string): EmotionType | null {
+  if (text.includes('焦虑') || text.includes('紧张')) return '焦虑'
+  if (text.includes('低落') || text.includes('难过') || text.includes('沮丧') || text.includes('悲伤')) return '低落'
+  if (text.includes('愉悦') || text.includes('开心') || text.includes('高兴') || text.includes('喜悦')) return '愉悦'
+  if (text.includes('平静') || text.includes('平和') || text.includes('还不错') || text.includes('挺好')) return '平静'
+  if (text.includes('空虚') || text.includes('迷茫') || text.includes('无聊') || text.includes('空洞')) return '空虚'
+  if (text.includes('混乱') || text.includes('烦躁') || text.includes('纠结') || text.includes('烦乱')) return '混乱'
+  return null
+}
+
+/** 从 AI 回复中提取微行动（与客户端逻辑保持一致） */
+function extractMicroAction(text: string): string | null {
+  const patterns = [
+    /今天可以[：:]\s*(.+?)(?:\n|$)/,
+    /微行动[：:]\s*(.+?)(?:\n|$)/,
+    /试着(.{6,30})(?:\n|$)/,
+    /可以试试(.{4,25})(?:\n|$)/,
+  ]
+  for (const p of patterns) {
+    const m = text.match(p)
+    if (m) return m[1].trim()
+  }
+  return null
+}
+
 export async function POST(req: NextRequest) {
-  // 鉴权：验证用户登录状态
+  // 鉴权
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: '请先登录' }, { status: 401 })
-  }
+  if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 })
 
   // 频率限制
   if (!checkRateLimit(user.id)) {
     return NextResponse.json({ error: '请求太频繁，请稍后再试' }, { status: 429 })
   }
 
-  const { messages, memory = [], yesterdayAction } = await req.json() as {
+  const { messages, memory = [], yesterdayAction, session_id } = await req.json() as {
     messages: { role: 'user' | 'assistant'; content: string }[]
     memory?: MemoryFact[]
     yesterdayAction?: string
+    session_id?: string
   }
 
-  // 输入校验：限制消息数量和长度
+  // 输入校验
   if (messages.length > 30) {
     return NextResponse.json({ error: '对话太长了，开启新对话吧' }, { status: 400 })
   }
@@ -55,14 +80,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '消息太长了，精简一下吧' }, { status: 400 })
   }
 
-  // 1. 危机检测 — 只检查最后一条用户消息
+  // 危机检测（只看最后一条用户消息）
   const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')
   const crisis = lastUserMsg ? detectCrisis(lastUserMsg.content) : false
 
-  // 2. 构建系统提示
+  // 构建系统提示
   const systemPrompt = buildChatSystemPrompt(memory, yesterdayAction)
 
-  // 3. 调用 Kimi streaming
+  // 调用 Kimi streaming
   const stream = await aiClient.chat.completions.create({
     model: CHAT_MODEL,
     stream: true,
@@ -74,26 +99,69 @@ export async function POST(req: NextRequest) {
     ],
   })
 
-  // 4. 将 Kimi stream 转为 Web ReadableStream
+  // 捕获关键值供闭包使用
+  const userId = user.id
+  const currentUserContent = lastMsg?.content ?? ''
   const encoder = new TextEncoder()
+
   const readable = new ReadableStream({
     async start(controller) {
-      // 如果检测到危机，先发一个 JSON 信号
+      // 危机信号优先发出
       if (crisis) {
         controller.enqueue(encoder.encode(`data: {"crisis":true}\n\n`))
       }
 
+      let accumulated = ''
       for await (const chunk of stream) {
         const delta = chunk.choices[0]?.delta?.content
         if (delta) {
-          // SSE 格式：data: <token>\n\n
+          accumulated += delta
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ token: delta })}\n\n`))
         }
-        // 流结束信号
         if (chunk.choices[0]?.finish_reason === 'stop') {
           controller.enqueue(encoder.encode(`data: [DONE]\n\n`))
         }
       }
+
+      // ── 流结束后持久化到 Supabase ────────────────────────────
+      if (session_id) {
+        try {
+          const admin = createAdminClient()
+
+          // 读取现有消息
+          const { data: sessionRow } = await admin
+            .from('sessions')
+            .select('messages')
+            .eq('id', session_id)
+            .eq('user_id', userId)
+            .single()
+
+          const existing = (sessionRow?.messages ?? []) as Array<{ role: string; content: string; timestamp: string }>
+          const ts = new Date().toISOString()
+          const updated = [
+            ...existing,
+            { role: 'user', content: currentUserContent, timestamp: ts },
+            { role: 'ai',   content: accumulated,         timestamp: ts },
+          ]
+
+          const microAction = extractMicroAction(accumulated)
+          const emotionType = crisis ? '危机' : detectEmotionFromText(accumulated)
+
+          const patch: Record<string, unknown> = { messages: updated }
+          if (microAction) patch.micro_action = microAction
+          if (emotionType) patch.emotion_type  = emotionType
+
+          await admin
+            .from('sessions')
+            .update(patch)
+            .eq('id', session_id)
+            .eq('user_id', userId)
+        } catch (e) {
+          // 持久化失败不影响用户体验，仅记录
+          console.error('[chat] save error:', e)
+        }
+      }
+
       controller.close()
     },
   })

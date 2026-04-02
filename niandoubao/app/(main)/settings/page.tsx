@@ -6,6 +6,15 @@ import Link from 'next/link'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { styles as s } from '@/lib/styles'
 import { createClient } from '@/lib/supabase/client'
+import { MemoryFact } from '@/types'
+
+const CATEGORY_LABELS: Record<string, string> = {
+  压力源: '😤 压力',
+  人际关系: '🤝 人际',
+  近期困境: '🌧 困境',
+  有效策略: '✨ 策略',
+  其他: '📌 其他',
+}
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -14,9 +23,10 @@ export default function SettingsPage() {
   const [userEmail, setUserEmail] = useState('')
   const [nickname, setNickname] = useState('')
   const [reminderEmail, setReminderEmail] = useState('')
-  const [reminderTime, setReminderTime] = useState('20:00')
-  const [reminderEnabled, setReminderEnabled] = useState(true)
+  const [reminderTime, setReminderTime] = useState('21:00')
+  const [reminderEnabled, setReminderEnabled] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -25,21 +35,52 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState('')
   const [passwordMsg, setPasswordMsg] = useState('')
   const [changingPassword, setChangingPassword] = useState(false)
+  const [memoryFacts, setMemoryFacts] = useState<MemoryFact[]>([])
+  const [profileLoaded, setProfileLoaded] = useState(false)
 
-  // 获取当前用户信息
+  // 加载用户资料
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user?.email) {
-        setUserEmail(user.email)
-        setReminderEmail(user.email)
-        setNickname(user.email.split('@')[0])
+    async function loadProfile() {
+      // 邮箱从 Supabase Auth 读
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.email) setUserEmail(user.email)
+
+      // 资料从 API 读
+      const res = await fetch('/api/profile')
+      if (res.ok) {
+        const profile = await res.json()
+        setNickname(profile.nickname ?? '')
+        setReminderEmail(profile.reminder_email ?? user?.email ?? '')
+        setReminderTime(profile.reminder_time ?? '21:00')
+        setReminderEnabled(profile.reminder_enabled ?? false)
       }
-    })
+      setProfileLoaded(true)
+    }
+
+    async function loadMemory() {
+      const res = await fetch('/api/memory')
+      if (res.ok) {
+        const data = await res.json()
+        setMemoryFacts(data.key_facts ?? [])
+      }
+    }
+
+    loadProfile()
+    loadMemory()
   }, [supabase.auth])
 
-  function handleSave() {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+  async function handleSave() {
+    setSaving(true)
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, reminder_email: reminderEmail, reminder_time: reminderTime, reminder_enabled: reminderEnabled }),
+    })
+    setSaving(false)
+    if (res.ok) {
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    }
   }
 
   async function handleLogout() {
@@ -89,7 +130,7 @@ export default function SettingsPage() {
 
   return (
     <div className={s.page}>
-      <AppHeader title="设置" />
+      <AppHeader title="设置" showBack onBack={() => router.back()} />
 
       <div className="flex-1 overflow-y-auto px-page-x py-page-y space-y-4">
 
@@ -102,7 +143,9 @@ export default function SettingsPage() {
                 {(nickname || '?').charAt(0)}
               </div>
               <div>
-                <p className="text-body-md text-text-primary font-medium">{nickname || '加载中...'}</p>
+                <p className="text-body-md text-text-primary font-medium">
+                  {profileLoaded ? nickname || '小豆包' : '加载中…'}
+                </p>
                 <p className="text-body-sm text-text-muted">{userEmail}</p>
               </div>
             </div>
@@ -157,9 +200,32 @@ export default function SettingsPage() {
                     disabled={changingPassword || !currentPassword || !newPassword}
                     className={`flex-1 ${s.btnPrimary} disabled:opacity-40`}
                   >
-                    {changingPassword ? '修改中...' : '确认修改'}
+                    {changingPassword ? '修改中…' : '确认修改'}
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* 粘豆包记住了什么 */}
+        <section>
+          <h2 className="text-label uppercase tracking-widest text-text-muted mb-3">粘豆包记住了你</h2>
+          <div className="bg-surface rounded-card shadow-card p-4">
+            {memoryFacts.length === 0 ? (
+              <p className="text-body-sm text-text-muted text-center py-2">
+                聊得越多，我对你的了解就越深 🫘
+              </p>
+            ) : (
+              <div className="space-y-2.5">
+                {memoryFacts.map((f, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <span className="text-label bg-primary/8 text-primary rounded-chip px-2 py-0.5 flex-shrink-0 mt-0.5">
+                      {CATEGORY_LABELS[f.category] ?? f.category}
+                    </span>
+                    <p className="text-body-sm text-text-primary leading-relaxed">{f.fact}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -172,7 +238,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-body-md text-text-primary font-medium">开启每日提醒</p>
-                <p className="text-body-sm text-text-muted">粘豆包会在你设定的时间发邮件提醒你</p>
+                <p className="text-body-sm text-text-muted">设定时间后会发邮件提醒你</p>
               </div>
               <button
                 onClick={() => setReminderEnabled(v => !v)}
@@ -217,8 +283,12 @@ export default function SettingsPage() {
           <div className="bg-surface rounded-card shadow-card divide-y divide-border">
             <div className="flex items-center justify-between px-4 py-3">
               <span className="text-body-md text-text-primary">版本</span>
-              <span className="text-body-sm text-text-muted">v0.1.0 Beta</span>
+              <span className="text-body-sm text-text-muted">v0.2.0 Beta</span>
             </div>
+            <Link href="/history" className="flex items-center justify-between px-4 py-3">
+              <span className="text-body-md text-text-primary">情绪记录</span>
+              <span className="text-body-sm text-text-muted">查看 →</span>
+            </Link>
             <Link href="/privacy" className="flex items-center justify-between px-4 py-3">
               <span className="text-body-md text-text-primary">隐私政策</span>
               <span className="text-body-sm text-text-muted">查看 →</span>
@@ -233,9 +303,10 @@ export default function SettingsPage() {
         {/* 保存按钮 */}
         <button
           onClick={handleSave}
-          className={`w-full ${s.btnPrimary} transition-all duration-300 ${saved ? 'bg-accent shadow-none' : ''}`}
+          disabled={saving}
+          className={`w-full ${s.btnPrimary} transition-all duration-300 disabled:opacity-60 ${saved ? 'bg-accent shadow-none' : ''}`}
         >
-          {saved ? '✓ 已保存' : '保存设置'}
+          {saving ? '保存中…' : saved ? '✓ 已保存' : '保存设置'}
         </button>
 
         {/* 退出登录 */}
@@ -244,7 +315,7 @@ export default function SettingsPage() {
           disabled={loggingOut}
           className="w-full bg-surface rounded-card border border-border py-3 text-body-md text-text-muted hover:border-crisis/20 hover:text-crisis transition-all duration-200 active:scale-[0.98]"
         >
-          {loggingOut ? '退出中...' : '退出登录'}
+          {loggingOut ? '退出中…' : '退出登录'}
         </button>
 
         {/* 删除账户 */}
@@ -260,10 +331,7 @@ export default function SettingsPage() {
             <p className="text-body-sm text-text-primary font-medium">确定要删除账户吗？</p>
             <p className="text-body-sm text-text-secondary">此操作不可撤销，你的所有数据将被永久删除。</p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className={`flex-1 ${s.btnSecondary}`}
-              >
+              <button onClick={() => setShowDeleteConfirm(false)} className={`flex-1 ${s.btnSecondary}`}>
                 取消
               </button>
               <button
@@ -271,7 +339,7 @@ export default function SettingsPage() {
                 disabled={deleting}
                 className="flex-1 bg-crisis text-white rounded-btn px-4 py-2.5 text-body-sm font-medium active:scale-95 transition-transform disabled:opacity-50"
               >
-                {deleting ? '删除中...' : '确认删除'}
+                {deleting ? '删除中…' : '确认删除'}
               </button>
             </div>
           </div>

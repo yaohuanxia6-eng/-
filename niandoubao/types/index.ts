@@ -51,3 +51,73 @@ export interface ChatRequest {
   message: string
   session_id: string
 }
+
+// MBTI
+export type MBTIDimension = 'EI' | 'SN' | 'TF' | 'JP'
+export interface MBTIPreference {
+  EI: 'E' | 'I' | null
+  SN: 'S' | 'N' | null
+  TF: 'T' | 'F' | null
+  JP: 'J' | 'P' | null
+}
+
+// Diary
+export interface DiaryEntry {
+  id: string
+  user_id: string
+  mood: string
+  mood_label: string
+  mode: 'guided' | 'free'
+  content: {
+    what_happened?: string
+    body_reaction?: string
+    thoughts?: string
+    self_talk?: string
+    free_text?: string
+  }
+  created_at: string
+}
+
+// Safety Plan
+export interface SafetyPlan {
+  id: string
+  user_id: string
+  crisis_signals: string
+  self_actions: string
+  contacts: string
+  professional_help: string
+  reasons_to_live: string
+  updated_at: string
+}
+
+// Gratitude
+export interface GratitudeEntry {
+  id: string
+  user_id: string
+  items: string[]
+  created_at: string
+}
+
+// CBT
+export interface CBTRecord {
+  id: string
+  user_id: string
+  thought: string
+  distress_before: number
+  distress_after: number
+  evidence_for: string
+  evidence_against: string
+  friend_advice: string
+  reframe: string
+  insight: string
+  created_at: string
+}
+
+// Emotion Record (for history page)
+export interface EmotionRecord {
+  date: string
+  emotion_type: EmotionType
+  emotion_snapshot: string | null
+  micro_action: string | null
+  micro_action_done: boolean
+}

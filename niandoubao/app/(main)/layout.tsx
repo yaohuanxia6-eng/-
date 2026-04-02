@@ -1,3 +1,29 @@
+'use client'
+
+import { BottomNav } from '@/components/layout/BottomNav'
+import { usePathname } from 'next/navigation'
+
+// 这些子页面不显示底部导航栏（工具详情页、引导页）
+const HIDE_NAV_PATTERNS = [
+  '/toolkit/breathing',
+  '/toolkit/diary',
+  '/toolkit/cbt',
+  '/toolkit/grounding',
+  '/toolkit/safety-plan',
+  '/toolkit/gratitude',
+  '/onboarding',
+]
+
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  const pathname = usePathname()
+  const hideNav = HIDE_NAV_PATTERNS.some(p => pathname.startsWith(p))
+
+  return (
+    <div className="flex flex-col min-h-screen max-w-[430px] mx-auto bg-background relative">
+      <div className={hideNav ? 'flex-1' : 'flex-1 pb-14'}>
+        {children}
+      </div>
+      {!hideNav && <BottomNav />}
+    </div>
+  )
 }

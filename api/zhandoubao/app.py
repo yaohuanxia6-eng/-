@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 load_dotenv()
 
 from database import init_pool, close_pool
-from routers import health, sessions, chat, memory, profile
+from routers import health, sessions, chat, memory, profile, mbti, diary, safety_plan, gratitude, cbt, emotion
 
 
 @asynccontextmanager
@@ -50,6 +50,12 @@ app.include_router(sessions.router)
 app.include_router(chat.router)
 app.include_router(memory.router)
 app.include_router(profile.router)
+app.include_router(mbti.router)
+app.include_router(diary.router)
+app.include_router(safety_plan.router)
+app.include_router(gratitude.router)
+app.include_router(cbt.router)
+app.include_router(emotion.router)
 
 
 if __name__ == "__main__":

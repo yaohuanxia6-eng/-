@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
           supabaseResponse = NextResponse.next({ request })
@@ -31,8 +31,11 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  const PROTECTED = ['/chat', '/settings', '/history', '/toolkit', '/onboarding']
+  const isProtected = PROTECTED.some(p => pathname.startsWith(p))
+
   // 未登录 → 访问受保护页面 → 跳转登录
-  if (!user && (pathname.startsWith('/chat') || pathname.startsWith('/settings'))) {
+  if (!user && isProtected) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
@@ -49,5 +52,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/login', '/chat', '/settings'],
+  matcher: ['/', '/login', '/chat', '/settings', '/history', '/toolkit/:path*', '/onboarding'],
 }
