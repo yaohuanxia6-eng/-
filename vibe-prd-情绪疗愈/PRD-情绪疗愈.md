@@ -1,14 +1,14 @@
 # 粘豆包 · AI Building Spec
 
 > 面向 AI 编程 Agent（Claude Code / Cursor / Trae）的执行规范文档
-> 最后更新：2026-03-14
-> 状态：撰写中
+> 最后更新：2026-04-03
+> 状态：V1.1 开发完成
 
 ---
 
 ## 模块1：项目概述
 
-> 最后更新：2026-03-14
+> 最后更新：2026-04-03
 > 依赖模块：无
 
 ### 1.1 产品定位
@@ -89,7 +89,7 @@ AI先追问昨日微行动反馈 → 进入今日签到
 
 ## 模块2：技术栈与环境配置
 
-> 最后更新：2026-03-14
+> 最后更新：2026-04-03
 > 依赖模块：模块1
 
 ### 2.1 项目初始化命令
@@ -120,62 +120,83 @@ niandoubao/
 ├── app/
 │   ├── (auth)/
 │   │   ├── login/
-│   │   │   └── page.tsx          # 手机号登录页
+│   │   │   └── page.tsx          # 邮箱+密码登录页
 │   │   └── layout.tsx
 │   ├── (main)/
 │   │   ├── chat/
-│   │   │   └── page.tsx          # 核心签到对话页
+│   │   │   └── page.tsx          # 核心签到对话页（连续对话，按日期分组）
+│   │   ├── toolkit/
+│   │   │   ├── page.tsx          # 6工具网格入口
+│   │   │   ├── layout.tsx
+│   │   │   ├── breathing/page.tsx    # 4-7-8 呼吸练习
+│   │   │   ├── diary/
+│   │   │   │   ├── page.tsx          # 情绪日记（引导/自由模式）
+│   │   │   │   └── history/page.tsx  # 日记历史 + 逐条导出
+│   │   │   ├── cbt/page.tsx          # 认知重构 6 步
+│   │   │   ├── grounding/page.tsx    # 感官落地 5-4-3-2-1
+│   │   │   ├── safety-plan/page.tsx  # 安全计划
+│   │   │   └── gratitude/
+│   │   │       ├── page.tsx          # 感恩记录 21 天挑战
+│   │   │       └── history/page.tsx  # 感恩历史
+│   │   ├── history/
+│   │   │   └── page.tsx          # 情绪记录（30天日历+趋势+统计）
 │   │   ├── settings/
-│   │   │   └── page.tsx          # 用户设置页（提醒时间）
-│   │   └── layout.tsx
-│   ├── api/
-│   │   ├── chat/
-│   │   │   └── route.ts          # 对话接口（流式输出）
-│   │   ├── memory/
-│   │   │   └── route.ts          # 记忆提炼接口
-│   │   └── remind/
-│   │       └── route.ts          # 邮件提醒发送接口
+│   │   │   └── page.tsx          # 个人设置页
+│   │   ├── onboarding/
+│   │   │   └── page.tsx          # MBTI 引导页
+│   │   └── layout.tsx            # 主布局（含 BottomNav）
+│   ├── api/                      # Next.js API 代理路由（11个）
+│   │   ├── chat/route.ts
+│   │   ├── mbti/route.ts
+│   │   ├── diary/route.ts
+│   │   ├── diary/[id]/route.ts
+│   │   ├── safety-plan/route.ts
+│   │   ├── gratitude/route.ts
+│   │   ├── gratitude/streak/route.ts
+│   │   ├── cbt/route.ts
+│   │   ├── cbt/today/route.ts
+│   │   ├── emotion/route.ts
+│   │   ├── emotion/history/route.ts
+│   │   └── emotion/trend/route.ts
 │   ├── globals.css
 │   ├── layout.tsx
-│   └── page.tsx                  # 首页（未登录→跳转login，已登录→跳转chat）
+│   └── page.tsx
 │
 ├── components/
-│   ├── ui/                       # shadcn 自动生成，不要手动修改
+│   ├── ui/                       # shadcn 基础组件
 │   ├── chat/
-│   │   ├── ChatBubble.tsx        # 单条对话气泡（AI / 用户 两种样式）
-│   │   ├── ChatInput.tsx         # 底部输入框
-│   │   ├── MicroActionCard.tsx   # 微行动卡片
-│   │   └── CrisisCard.tsx        # 危机干预卡片
-│   ├── auth/
-│   │   └── LoginForm.tsx         # 手机号 + 验证码表单
+│   │   ├── ChatBubble.tsx
+│   │   ├── ChatInput.tsx
+│   │   ├── MicroActionCard.tsx
+│   │   └── CrisisCard.tsx
 │   └── layout/
-│       └── AppHeader.tsx         # 顶部导航（logo + 用户头像）
+│       ├── AppHeader.tsx         # 顶部导航（返回/品牌 + 头像）
+│       └── BottomNav.tsx         # 底部4Tab导航
 │
 ├── lib/
 │   ├── supabase/
-│   │   ├── client.ts             # 浏览器端 Supabase client
-│   │   └── server.ts             # 服务端 Supabase client（用于 API Routes）
+│   │   ├── client.ts
+│   │   ├── server.ts
+│   │   └── admin.ts
 │   ├── deepseek/
-│   │   ├── client.ts             # DeepSeek API 初始化
-│   │   └── prompts.ts            # 所有 system prompt 集中管理
-│   ├── memory/
-│   │   └── extract.ts            # 对话结束后提炼记忆摘要的逻辑
+│   │   ├── client.ts             # Kimi/DeepSeek API 初始化
+│   │   └── prompts.ts            # System prompt 集中管理
 │   └── crisis/
 │       └── detector.ts           # 危机关键词检测
 │
 ├── types/
-│   └── index.ts                  # 全局 TypeScript 类型定义
+│   └── index.ts                  # 全局 TypeScript 类型
 │
-├── .env.local                    # 环境变量（不提交 git）
-├── .gitignore
+├── middleware.ts                 # 路由保护（Supabase Auth）
+├── .env.local
 ├── next.config.ts
 ├── tailwind.config.ts
 └── package.json
 ```
 
-### 2.3 登录方式设计（双入口）
+### 2.3 登录方式设计
 
-用户可用**两种方式**登录，共用同一套 Supabase Auth，LoginForm.tsx 展示两个 Tab：
+用户使用**邮箱 + 密码**登录/注册，基于 Supabase Auth。
 
 ```
 ┌─────────────────────────────────┐
@@ -320,12 +341,12 @@ CREATE POLICY "用户只能操作自己的数据" ON public.memory_summary
 // lib/deepseek/client.ts
 import OpenAI from 'openai'
 
-export const deepseek = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY!,
-  baseURL: process.env.DEEPSEEK_BASE_URL,
+export const aiClient = new OpenAI({
+  apiKey: process.env.KIMI_API_KEY ?? process.env.DEEPSEEK_API_KEY ?? 'sk-placeholder',
+  baseURL: process.env.KIMI_BASE_URL ?? process.env.DEEPSEEK_BASE_URL ?? 'https://api.moonshot.cn/v1',
 })
 
-export const CHAT_MODEL = 'deepseek-chat'
+export const CHAT_MODEL = process.env.AI_MODEL ?? 'moonshot-v1-8k'
 ```
 
 ---
