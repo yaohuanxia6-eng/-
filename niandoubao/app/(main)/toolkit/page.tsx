@@ -1,49 +1,62 @@
 'use client'
 
 import Link from 'next/link'
+import { Wind, BookHeart, Scissors, ScanEye, CircleAlert, HeartHandshake } from 'lucide-react'
 import { BottomNav } from '@/components/layout/BottomNav'
 
 const tools = [
   {
-    emoji: '🫁',
-    title: '呼吸练习',
-    desc: '4-7-8 呼吸法，快速缓解焦虑',
-    duration: '3分钟',
+    icon: Wind,
+    iconBg: 'bg-[#E8F5E9]',
+    iconColor: 'text-[#4CAF50]',
+    title: '4-7-8 呼吸',
+    desc: '快速平复焦虑情绪',
+    tag: 'TE 推荐',
     href: '/toolkit/breathing',
   },
   {
-    emoji: '✍️',
+    icon: BookHeart,
+    iconBg: 'bg-[#FCE4EC]',
+    iconColor: 'text-[#E91E63]',
     title: '情绪日记',
-    desc: '记录感受，整理内心',
-    duration: '5分钟',
+    desc: '结构化表达内心感受',
+    tag: 'FI 推荐',
     href: '/toolkit/diary',
   },
   {
-    emoji: '🧠',
+    icon: Scissors,
+    iconBg: 'bg-[#EDE7F6]',
+    iconColor: 'text-[#7C4DFF]',
     title: '认知重构',
-    desc: '换个角度看问题',
-    duration: '10分钟',
+    desc: '打破负面思维循环',
+    tag: 'TI 推荐',
     href: '/toolkit/cbt',
   },
   {
-    emoji: '🧘',
-    title: '感官落地',
-    desc: '5-4-3-2-1 回到当下',
-    duration: '3分钟',
+    icon: ScanEye,
+    iconBg: 'bg-[#FFF3E0]',
+    iconColor: 'text-[#F57C00]',
+    title: '五感扎根',
+    desc: '将注意力拉回当下',
+    tag: '通用',
     href: '/toolkit/grounding',
   },
   {
-    emoji: '🛡️',
+    icon: CircleAlert,
+    iconBg: 'bg-[#FFEBEE]',
+    iconColor: 'text-[#E53935]',
     title: '安全计划',
-    desc: '为困难时刻提前准备',
-    duration: '',
+    desc: '应对极端情绪危机',
+    tag: '危机专用',
     href: '/toolkit/safety-plan',
   },
   {
-    emoji: '🌟',
+    icon: HeartHandshake,
+    iconBg: 'bg-[#E0F2F1]',
+    iconColor: 'text-[#26A69A]',
     title: '感恩记录',
-    desc: '发现生活中的美好',
-    duration: '',
+    desc: '发现生活中的微小光亮',
+    tag: 'FE 推荐',
     href: '/toolkit/gratitude',
   },
 ]
@@ -53,40 +66,36 @@ export default function ToolkitPage() {
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-[430px] mx-auto px-page-x py-page-y">
         {/* Header */}
-        <h1 className="font-serif text-title-lg text-primary mb-2">工具箱</h1>
-        <p className="text-body-md text-text-secondary mb-6 leading-relaxed">
-          不只是聊天。这里有经过验证的心理工具，帮你在需要的时候照顾自己。
-        </p>
-
-        {/* Section label */}
-        <h2 className="text-label uppercase tracking-widest text-text-muted mb-3">
-          全部工具
-        </h2>
+        <div className="flex items-baseline gap-3 mb-3">
+          <h1 className="font-serif text-[28px] font-bold text-text-primary flex-shrink-0">心理工具箱</h1>
+          <p className="text-body-sm text-text-muted">选择一个适合现在的练习</p>
+        </div>
 
         {/* Grid */}
         <div className="grid grid-cols-2 gap-3">
-          {tools.map((tool) => (
-            <Link
-              key={tool.href}
-              href={tool.href}
-              className="bg-surface rounded-card border border-border shadow-card p-4 flex flex-col gap-2 hover:shadow-card-hover transition-all duration-200 active:scale-[0.97]"
-            >
-              <span className="text-2xl">{tool.emoji}</span>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-body-md font-medium text-text-primary">
+          {tools.map((tool) => {
+            const Icon = tool.icon
+            return (
+              <Link
+                key={tool.href}
+                href={tool.href}
+                className="bg-surface rounded-card border border-border shadow-card p-4 flex flex-col gap-3 hover:shadow-card-hover transition-all duration-200 active:scale-[0.97]"
+              >
+                <div className={`w-11 h-11 rounded-xl ${tool.iconBg} flex items-center justify-center`}>
+                  <Icon size={22} className={tool.iconColor} strokeWidth={1.8} />
+                </div>
+                <div>
+                  <h3 className="text-body-md font-semibold text-text-primary">
                     {tool.title}
                   </h3>
-                  {tool.duration && (
-                    <span className="text-label bg-primary/[0.08] text-primary rounded-chip px-2 py-0.5">
-                      {tool.duration}
-                    </span>
-                  )}
+                  <p className="text-body-sm text-text-muted mt-1">{tool.desc}</p>
                 </div>
-                <p className="text-body-sm text-text-muted mt-1">{tool.desc}</p>
-              </div>
-            </Link>
-          ))}
+                <span className="text-[11px] text-text-muted bg-surface-2 rounded-full px-2.5 py-0.5 self-start">
+                  {tool.tag}
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </div>
 

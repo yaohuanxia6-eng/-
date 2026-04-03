@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { AppHeader } from '@/components/layout/AppHeader'
+
 import { EmotionType } from '@/types'
 
 interface SessionSummary {
@@ -78,9 +78,12 @@ export default function HistoryPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <AppHeader title="情绪记录" />
-
-      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 max-w-md mx-auto w-full">
+      <div className="flex-1 overflow-y-auto px-page-x py-page-y space-y-5 max-w-md mx-auto w-full">
+        {/* Header */}
+        <div className="flex items-baseline gap-3 mb-0">
+          <h1 className="font-serif text-[28px] font-bold text-text-primary flex-shrink-0">情绪记录</h1>
+          <p className="text-body-sm text-text-muted">你已经和粘豆包相伴了 {sessions.length} 天</p>
+        </div>
 
         {loading ? (
           <div className="flex flex-col items-center gap-3 pt-20 text-text-muted">

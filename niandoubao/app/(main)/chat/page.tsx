@@ -84,8 +84,9 @@ export default function ChatPage() {
               setActionDone(session.micro_action_done ?? false)
             }
           } else {
-            // 今天第一次打开 — 生成带记忆的问候
-            const greeting = buildGreeting(yesterdayActionRef.current)
+            // 今天第一次打开 — 获取天气并生成诗意问候
+            const weather = await fetchWeather()
+            const greeting = buildGreeting(yesterdayActionRef.current, weather)
             setMessages([{
               role: 'ai',
               content: greeting,
@@ -111,17 +112,93 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamingContent])
 
-  /** 根据昨日行动生成带记忆的问候 */
-  function buildGreeting(yesterdayAction: string | null): string {
+  /** 获取天气 */
+  async function fetchWeather(): Promise<string> {
+    try {
+      const res = await fetch('/api/weather')
+      if (!res.ok) return ''
+      const data = await res.json()
+      return data.desc || ''
+    } catch { return '' }
+  }
+
+  function getTimeSlot(): 'morning' | 'afternoon' | 'evening' | 'night' {
+    const h = new Date().getHours()
+    if (h >= 5 && h < 12) return 'morning'
+    if (h >= 12 && h < 17) return 'afternoon'
+    if (h >= 17 && h < 22) return 'evening'
+    return 'night'
+  }
+
+  /** 根据天气+时间+昨日行动生成诗意问候 */
+  function buildGreeting(yesterdayAction: string | null, weather?: string): string {
     if (yesterdayAction) {
-      return `早上好呀 ☀️ 昨天给你建议的「${yesterdayAction}」，有去试试吗？`
+      return `昨天给你建议的「${yesterdayAction}」，有去试试吗？不管结果怎样，愿意尝试就很棒了`
     }
-    const greetings = [
-      '嗨，今天怎么样？有什么想聊聊的吗',
-      '新的一天 ☀️ 今天感觉怎么样？',
-      '嗨，今天过得还好吗？',
-    ]
-    return greetings[Math.floor(Math.random() * greetings.length)]
+
+    const time = getTimeSlot()
+    const w = (weather || '').toLowerCase()
+    const isRain = /雨|rain|shower|drizzle/.test(w)
+    const isCloudy = /阴|多云|cloud|overcast/.test(w)
+    const isSnow = /雪|snow/.test(w)
+    const isClear = /晴|clear|sunny/.test(w)
+
+    const poeticGreetings: Record<string, string[]> = {
+      morning_clear: [
+        '晨光轻轻敲了敲窗，新的一天又温柔地来了。今天想聊点什么？',
+        '阳光很好，像一封写给你的温暖情书。新的一天，有什么想说的吗？',
+      ],
+      morning_rain: [
+        '窗外下着雨，空气里都是湿润的温柔。这样的早晨，特别适合说说心里话',
+        '雨声像一首轻轻的歌，陪你慢慢醒来。今天心情如何？',
+      ],
+      morning_cloudy: [
+        '天空铺了一层柔柔的云，像替你盖了条薄毯。今天有什么想聊的吗？',
+        '多云的早晨有种安静的温柔。新的一天，你好呀',
+      ],
+      morning_snow: [
+        '世界被白雪轻轻包裹了，好安静好温柔。这样的日子，想和你聊聊天',
+      ],
+      afternoon_clear: [
+        '午后的阳光懒洋洋地洒进来，像一只暖暖的猫。你今天还好吗？',
+      ],
+      afternoon_rain: [
+        '下午的雨让一切慢了下来，刚好可以停下来，和自己待一会儿',
+      ],
+      afternoon_cloudy: [
+        '午后的天空灰灰柔柔的，像一幅水墨画。这个下午过得怎样？',
+      ],
+      evening_clear: [
+        '傍晚的天空染上了橘色和粉色，好温柔。今天有什么想说的吗？',
+      ],
+      evening_rain: [
+        '雨还在下，夜色渐渐浓了。这样的傍晚，特别想听你说说话',
+      ],
+      evening_cloudy: [
+        '天色暗下来了，一天又快过完了。今天过得怎么样？',
+      ],
+      night_clear: [
+        '夜色像一条温柔的毯子，把整个城市都裹住了。月亮和星星都在陪着你',
+        '深夜的安静是属于你的。想聊聊今天的事吗？',
+      ],
+      night_rain: [
+        '深夜的雨声像温柔的催眠曲，一切都慢了下来。有什么想说的吗？',
+      ],
+      night_cloudy: [
+        '夜深了，云层后面藏着月亮，它在悄悄陪你。今天还好吗？',
+      ],
+    }
+
+    // determine weather key
+    let weatherKey = 'cloudy'
+    if (isRain) weatherKey = 'rain'
+    else if (isSnow) weatherKey = 'snow'
+    else if (isClear) weatherKey = 'clear'
+    else if (isCloudy) weatherKey = 'cloudy'
+
+    const key = `${time}_${weatherKey}`
+    const candidates = poeticGreetings[key] || poeticGreetings[`${time}_cloudy`] || ['嗨，今天怎么样？有什么想聊聊的吗']
+    return candidates[Math.floor(Math.random() * candidates.length)]
   }
 
   // 从流式内容中提取微行动
@@ -268,7 +345,20 @@ export default function ChatPage() {
       <AppHeader nickname={nickname} />
 
       {/* 对话区 */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-4 pb-2">
+      <div
+        className="flex-1 overflow-y-auto scrollbar-hide px-4 pt-4 pb-2"
+        style={{
+          background: `
+            radial-gradient(ellipse 60% 60% at 10% 10%, rgba(247,192,162,0.30) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 50% at 90% 5%, rgba(232,208,155,0.26) 0%, transparent 65%),
+            radial-gradient(ellipse 55% 55% at 50% 80%, rgba(225,188,198,0.22) 0%, transparent 65%),
+            radial-gradient(ellipse 60% 60% at 20% 50%, rgba(240,230,202,0.36) 0%, transparent 70%),
+            radial-gradient(ellipse 45% 45% at 75% 40%, rgba(200,225,210,0.18) 0%, transparent 55%),
+            radial-gradient(ellipse 40% 40% at 40% 30%, rgba(225,215,236,0.15) 0%, transparent 50%),
+            #F3ECE0`,
+          backgroundAttachment: 'fixed',
+        }}
+      >
         {/* AI 数据告知 */}
         <div className="bg-surface-2 rounded-btn px-3 py-2 mb-4 text-center">
           <p className="text-label text-text-muted leading-relaxed">
@@ -306,11 +396,8 @@ export default function ChatPage() {
 
         {/* 等待 AI 响应 */}
         {isStreaming && !streamingContent && (
-          <div className="flex gap-2.5 items-start mt-4 animate-bubble-in">
-            <div className="w-9 h-9 rounded-[10px] bg-primary flex-shrink-0 flex items-center justify-center mt-0.5 shadow-sm">
-              <span className="text-white text-[14px] font-semibold font-serif">豆</span>
-            </div>
-            <div className="bg-surface border border-border rounded-[4px_16px_16px_16px] px-4 py-3 shadow-card">
+          <div className="flex mt-4 animate-bubble-in">
+            <div className="bg-white/80 backdrop-blur-sm border border-white/60 rounded-[20px] px-4 py-3 shadow-card">
               <span className="flex gap-1">
                 {[0, 150, 300].map(d => (
                   <span

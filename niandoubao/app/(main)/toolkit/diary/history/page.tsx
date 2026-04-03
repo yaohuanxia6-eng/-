@@ -59,6 +59,12 @@ export default function DiaryHistoryPage() {
             <span className="text-4xl mb-3">📝</span>
             <p className="text-body-md text-text-muted">还没有写过日记</p>
             <p className="text-body-sm text-text-muted mt-1">写下第一篇日记，开始了解自己的情绪</p>
+            <button
+              onClick={() => router.push('/toolkit/diary')}
+              className="mt-5 px-6 py-2.5 bg-primary text-white text-body-sm font-medium rounded-button hover:bg-primary/90 transition-colors"
+            >
+              开始写日记
+            </button>
           </div>
         ) : (
           entries.map((entry) => (

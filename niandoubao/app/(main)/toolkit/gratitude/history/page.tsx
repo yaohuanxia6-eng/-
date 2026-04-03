@@ -59,6 +59,12 @@ export default function GratitudeHistoryPage() {
             <span className="text-4xl mb-3">🌟</span>
             <p className="text-body-md text-text-muted">还没有感恩记录</p>
             <p className="text-body-sm text-text-muted mt-1">开始记录生活中的美好吧</p>
+            <button
+              onClick={() => router.push('/toolkit/gratitude')}
+              className="mt-5 px-6 py-2.5 bg-primary text-white text-body-sm font-medium rounded-button hover:bg-primary/90 transition-colors"
+            >
+              记录今天的美好
+            </button>
           </div>
         ) : (
           entries.map((entry) => (

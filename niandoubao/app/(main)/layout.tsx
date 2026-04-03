@@ -12,6 +12,9 @@ const HIDE_NAV_PATTERNS = [
   '/toolkit/safety-plan',
   '/toolkit/gratitude',
   '/onboarding',
+  '/settings/profile',
+  '/settings/memory',
+  '/settings/reminder',
 ]
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {

@@ -23,6 +23,8 @@
 │   ├── auth.py               # Supabase JWT 验证
 │   ├── database.py           # MySQL 异步连接池
 │   ├── models.py             # 所有 Pydantic 模型
+│   ├── deploy.sh             # 部署脚本
+│   ├── init_db.py            # 数据库初始化
 │   └── routers/
 │       ├── health.py         # 健康检查
 │       ├── sessions.py       # 每日会话 CRUD
@@ -50,11 +52,18 @@
 │   │   │   │   ├── safety-plan/  # 安全计划
 │   │   │   │   └── gratitude/    # 感恩记录 + history/
 │   │   │   ├── history/      # 情绪记录 (日历+趋势+统计)
-│   │   │   ├── settings/     # 我的 (个人设置)
+│   │   │   ├── settings/     # 我的 (卡片式布局)
+│   │   │   │   ├── profile/      # 个人信息编辑
+│   │   │   │   ├── memory/       # 粘豆包的记忆
+│   │   │   │   └── reminder/     # 每日提醒设置
 │   │   │   ├── onboarding/   # MBTI 引导页
 │   │   │   └── layout.tsx    # 主布局 (含 BottomNav)
-│   │   └── api/              # Next.js API 代理路由 (11个)
+│   │   ├── api/              # Next.js API 代理路由
+│   │   │   └── weather/      # 天气 API (wttr.in)
+│   │   ├── privacy/          # 隐私政策
+│   │   └── terms/            # 用户协议
 │   ├── components/
+│   │   ├── auth/LoginForm.tsx
 │   │   ├── layout/AppHeader.tsx, BottomNav.tsx
 │   │   ├── chat/ChatBubble, ChatInput, MicroActionCard, CrisisCard
 │   │   └── ui/               # shadcn 基础组件
@@ -64,11 +73,7 @@
 │   │   └── crisis/detector.ts
 │   └── types/index.ts
 │
-├── database/schema.sql       # 数据库建表 SQL (7张新表)
-├── prototype.html            # 交互原型 (单文件 HTML)
-├── vibe-prd-情绪疗愈/         # AI Building Spec
-├── 产品文档/                  # 6份产品文档
-└── PROJECT_CONTEXT.md        # 项目上下文记忆文档
+└── database/schema.sql       # 数据库建表 SQL (7张新表)
 ```
 
 ## 数据库表
@@ -94,14 +99,18 @@ mysql -u root < database/schema.sql
 
 # 2. 后端
 cd api/zhandoubao
+cp .env.example .env  # 填入实际值
 pip install -r requirements.txt
 python app.py  # 端口 8091
 
 # 3. 前端
 cd niandoubao
+cp .env.example .env.local  # 填入实际值
 npm install
 npm run dev -- --port 3002
 ```
+
+> **注意**：本地开发时可临时注释 `next.config.mjs` 中的 `basePath: '/projects/zhandoubao'`，否则需带前缀访问。
 
 ## 环境变量
 
@@ -134,11 +143,11 @@ AI_MODEL=moonshot-v1-8k
 
 ## 核心功能
 
-- **连续对话**：打开 App 看到历史消息（按日期分组），每天 AI 主动问候并引用昨天话题
+- **连续对话**：打开 App 看到历史消息（按日期分组），每天根据天气+时段生成诗意问候
 - **AI 记忆**：从对话中提炼关键事实 (5类，共≤10条)，每次对话注入 System Prompt
 - **微行动闭环**：签到后给 1 个微行动，次日 AI 追问反馈
 - **危机检测**：12 个关键词匹配，触发危机卡片 + 专业热线
-- **MBTI 个性化**：4 维度选择，影响 AI 风格、微行动推荐、工具推荐
+- **MBTI 个性化**：4 维度选择，影响 AI 风格 (FI/FE/TI/TE)、微行动推荐、工具推荐
 - **心理工具箱**：6 工具（呼吸/日记/CBT/落地/安全计划/感恩）
 - **情绪追踪**：30 天日历 + 情绪分布 + 连续签到统计
 
@@ -167,7 +176,7 @@ AI_MODEL=moonshot-v1-8k
 
 - **Primary (棕)**: #8B7355
 - **Accent (绿)**: #7BAE84
-- **Background**: #FBF7F0
+- **Background**: #FBF7F0 (聊天区: #F3ECE0 暖色渐变弥散)
 - **Crisis (红)**: #C0392B
 - **标题字体**: 'Lora' / 'Noto Serif SC'
 - **正文字体**: 'Noto Sans SC' / 'PingFang SC'
@@ -178,3 +187,5 @@ AI_MODEL=moonshot-v1-8k
 |------|------|------|
 | V1.0 | 2026-04-02 | 原型完成，产品文档完成 |
 | V1.1 | 2026-04-03 | 前后端代码全部补齐，工具箱 6 工具实现，MBTI 引导、底部导航、连续对话系统完成 |
+| V1.2 | 2026-04-03 | 文档融合（Prompt+评测），项目清理，UI 截图生成 |
+| V1.3 | 2026-04-04 | UI 精致化改版：聊天渐变背景、大圆角气泡、卡片式设置页、天气诗意问候、精致导航栏、设置详情子页面 |

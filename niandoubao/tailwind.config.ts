@@ -42,7 +42,7 @@ const config: Config = {
       },
       borderRadius: {
         'card':   '12px',
-        'bubble': '14px',
+        'bubble': '20px',
         'input':  '10px',
         'btn':    '8px',
         'chip':   '99px',
