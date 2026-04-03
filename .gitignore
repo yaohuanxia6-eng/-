@@ -12,3 +12,10 @@ api/zhandoubao/.env
 # Python
 __pycache__/
 *.pyc
+
+# 文档（仅本地保留，不上传 GitHub）
+PROJECT_CONTEXT.md
+prototype.html
+product-insight-report-*.html
+产品文档/
+vibe-prd-情绪疗愈/
