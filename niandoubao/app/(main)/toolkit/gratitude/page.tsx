@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/toast'
 import Link from 'next/link'
 import { ChevronLeft, Plus } from 'lucide-react'
 
@@ -10,6 +11,7 @@ const CHALLENGE_DAYS = 21
 
 export default function GratitudePage() {
   const router = useRouter()
+  const toast = useToast()
   const [items, setItems] = useState<string[]>(['', '', ''])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -62,7 +64,7 @@ export default function GratitudePage() {
       setSaved(true)
       setTotalDays((d) => d + 1)
     } catch {
-      alert('保存失败，请稍后重试')
+      toast.show('保存失败，请稍后重试', 'error')
     } finally {
       setSaving(false)
     }

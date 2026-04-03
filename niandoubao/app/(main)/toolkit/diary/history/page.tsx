@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { DiaryEntry } from '@/types'
+import { useToast } from '@/components/ui/toast'
 
 export default function DiaryHistoryPage() {
+  const toast = useToast()
   const router = useRouter()
   const [entries, setEntries] = useState<DiaryEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -114,7 +116,7 @@ export default function DiaryHistoryPage() {
 
               {/* Export button */}
               <button
-                onClick={() => alert('导出功能即将上线')}
+                onClick={() => toast.show('导出功能即将上线', 'info')}
                 className="mt-3 text-body-sm text-primary hover:underline underline-offset-2"
               >
                 导出这篇

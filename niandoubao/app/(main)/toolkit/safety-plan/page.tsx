@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/toast'
 import { ChevronLeft } from 'lucide-react'
 
 const PRE_FILLED_PROFESSIONAL = `全国24小时心理援助热线：400-161-9995
@@ -11,6 +12,7 @@ const PRE_FILLED_PROFESSIONAL = `全国24小时心理援助热线：400-161-9995
 
 export default function SafetyPlanPage() {
   const router = useRouter()
+  const toast = useToast()
 
   const [crisisSignals, setCrisisSignals] = useState('')
   const [selfActions, setSelfActions] = useState('')
@@ -69,7 +71,7 @@ export default function SafetyPlanPage() {
       setSaved(true)
       setEditing(false)
     } catch {
-      alert('保存失败，请稍后重试')
+      toast.show('保存失败，请稍后重试', 'error')
     } finally {
       setSaving(false)
     }

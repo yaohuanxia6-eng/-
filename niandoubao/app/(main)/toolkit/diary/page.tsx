@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/toast'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 
@@ -23,6 +24,7 @@ const prompts = [
 
 export default function DiaryPage() {
   const router = useRouter()
+  const toast = useToast()
   const [tab, setTab] = useState<'guided' | 'free'>('guided')
   const [selectedMood, setSelectedMood] = useState<string | null>(null)
   const [selectedMoodLabel, setSelectedMoodLabel] = useState<string | null>(null)
@@ -62,7 +64,7 @@ export default function DiaryPage() {
       })
       setSaved(true)
     } catch {
-      alert('保存失败，请稍后重试')
+      toast.show('保存失败，请稍后重试', 'error')
     } finally {
       setSaving(false)
     }
