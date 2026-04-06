@@ -90,9 +90,6 @@ export default function ToolkitPage() {
                   </h3>
                   <p className="text-body-sm text-text-muted mt-1">{tool.desc}</p>
                 </div>
-                <span className="text-[11px] text-text-muted bg-surface-2 rounded-full px-2.5 py-0.5 self-start">
-                  {tool.tag}
-                </span>
               </Link>
             )
           })}

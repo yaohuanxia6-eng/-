@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
 import { ChevronLeft } from 'lucide-react'
+import { apiFetch } from '@/lib/api'
 
 const PRE_FILLED_PROFESSIONAL = `全国24小时心理援助热线：400-161-9995
 北京心理危机研究与干预中心：010-82951332
@@ -27,7 +28,7 @@ export default function SafetyPlanPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/safety-plan')
+        const res = await apiFetch('/safety-plan')
         if (res.ok) {
           const data = await res.json()
           if (data && data.crisis_signals) {
@@ -57,9 +58,8 @@ export default function SafetyPlanPage() {
     if (!anyFilled) return
     setSaving(true)
     try {
-      await fetch('/api/safety-plan', {
+      await apiFetch('/safety-plan', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           crisis_signals: crisisSignals,
           self_actions: selfActions,
@@ -102,9 +102,9 @@ export default function SafetyPlanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+    <div className="flex flex-col h-full bg-background max-w-[430px] mx-auto">
       {/* Header */}
-      <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0 sticky top-0 z-10">
+      <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0 sticky top-0 z-10" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
         <button onClick={() => router.back()} className="flex items-center text-primary -ml-1 p-1">
           <ChevronLeft size={22} />
         </button>
@@ -112,21 +112,21 @@ export default function SafetyPlanPage() {
         <div className="w-6" />
       </header>
 
-      <div className="px-page-x py-page-y space-y-4">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y space-y-4">
         {/* Explanation card */}
-        <div className="bg-accent/[0.08] border border-accent/20 rounded-card p-4">
+        <div className="border border-border rounded-card p-4" style={{ background: 'linear-gradient(135deg, rgba(139,115,85,0.06), rgba(123,174,132,0.06))' }}>
           <h3 className="text-body-md font-medium text-text-primary mb-1.5">
             什么是安全计划？
           </h3>
           <p className="text-body-sm text-text-secondary leading-relaxed">
-            安全计划是你在情绪低谷时的"应急指南"。提前写好，在最需要的时候可以快速翻阅，提醒自己可以做什么、找谁帮忙。
+            安全计划是你在情绪低谷时的&ldquo;应急指南&rdquo;。提前写好，在最需要的时候可以快速翻阅，提醒自己可以做什么、找谁帮忙。
           </p>
         </div>
 
         {/* Alert card */}
-        <div className="bg-crisis-bg border border-crisis/20 rounded-card p-4">
+        <div className="border border-accent/20 rounded-card p-4" style={{ background: 'rgba(123,174,132,0.08)' }}>
           <p className="text-body-sm text-text-secondary leading-relaxed">
-            当粘豆包在对话中感知到你可能正在经历危机时，会主动展示你的安全计划。
+            💚 当粘豆包在对话中感知到你可能正在经历危机时，会主动展示你的安全计划。
           </p>
         </div>
 

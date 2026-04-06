@@ -25,24 +25,29 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // 使用 getSession() 替代 getUser()，避免每次跳转都发网络请求验证
+  // getSession() 从本地 cookie 读取，速度快得多
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
   const { pathname } = request.nextUrl
 
-  const PROTECTED = ['/chat', '/settings', '/history', '/toolkit', '/onboarding']
-  const isProtected = PROTECTED.some(p => pathname.startsWith(p))
+  // 登录页和静态页不拦截
+  const p = pathname.replace(/\/$/, '') || '/'
+  if (p === '/login' || p === '/privacy' || p === '/terms') {
+    return supabaseResponse
+  }
 
-  // 未登录 → 访问受保护页面 → 跳转登录
-  if (!user && isProtected) {
+  // 所有其他页面都需要登录
+  if (!session) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // 已登录 → 访问登录页或首页 → 跳转聊天
-  if (user && (pathname === '/login' || pathname === '/')) {
+  // 首页重定向到聊天
+  if (p === '/' || p === '') {
     const url = request.nextUrl.clone()
     url.pathname = '/chat'
     return NextResponse.redirect(url)
@@ -52,5 +57,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/login', '/chat', '/settings', '/history', '/toolkit/:path*', '/onboarding'],
+  matcher: ['/', '/login', '/chat', '/settings/:path*', '/history', '/toolkit/:path*', '/onboarding', '/privacy', '/terms'],
 }

@@ -1,5 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 
 interface AppHeaderProps {
@@ -7,6 +8,7 @@ interface AppHeaderProps {
   onBack?: () => void
   title?: string
   nickname?: string
+  avatar?: string
   rightAction?: React.ReactNode
 }
 
@@ -15,10 +17,10 @@ export function AppHeader({
   onBack,
   title,
   nickname = '小豆包',
+  avatar,
   rightAction,
 }: AppHeaderProps) {
   const router = useRouter()
-  const initial = nickname.charAt(0)
 
   const handleBack = () => {
     if (onBack) onBack()
@@ -51,9 +53,11 @@ export function AppHeader({
       <div className="flex-1 flex justify-end items-center gap-3">
         {rightAction}
         {!showBack && (
-          <div className="w-8 h-8 rounded-full bg-surface-2 border-2 border-border flex items-center justify-center">
-            <span className="text-body-sm">{initial === '小' ? '🐰' : initial}</span>
-          </div>
+          <Link href="/settings/profile">
+            <div className="w-8 h-8 rounded-full bg-surface-2 border-2 border-border flex items-center justify-center">
+              <span className="text-body-sm">{avatar || (nickname.charAt(0) === '小' ? '🐰' : nickname.charAt(0))}</span>
+            </div>
+          </Link>
         )}
       </div>
     </header>

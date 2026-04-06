@@ -1,10 +1,15 @@
 // types/index.ts
 
+export const AVATAR_OPTIONS = [
+  '🐰','🐱','🐶','🐼','🦊','🐨','🐸','🐔','🦋','🌸','🌻','⭐','🍓','🧸','🎀','🌙','☁️','🌈','🍀','💫','🦄','🐝','🎐','🍡'
+] as const
+
 export interface UserProfile {
   id: string
   phone: string | null
   email: string | null
   nickname: string
+  avatar: string | null
   reminder_email: string | null
   reminder_time: string
   reminder_enabled: boolean
@@ -16,6 +21,7 @@ export interface Message {
   role: 'ai' | 'user'
   content: string
   timestamp: string
+  imageUrl?: string  // 用户上传图片的 base64 DataURL
 }
 
 export type EmotionType = '焦虑' | '空虚' | '低落' | '平静' | '愉悦' | '混乱' | '危机'
@@ -61,14 +67,22 @@ export interface MBTIPreference {
   JP: 'J' | 'P' | null
 }
 
-// Diary
+// Diary（兼容后端平铺字段格式）
 export interface DiaryEntry {
   id: string
   user_id: string
   mood: string
-  mood_label: string
+  mood_emoji?: string
+  mood_label?: string
   mode: 'guided' | 'free'
-  content: {
+  // 后端平铺字段
+  event?: string
+  body_reaction?: string
+  thought?: string
+  self_talk?: string
+  free_text?: string
+  // 旧版嵌套格式（兼容）
+  content?: {
     what_happened?: string
     body_reaction?: string
     thoughts?: string

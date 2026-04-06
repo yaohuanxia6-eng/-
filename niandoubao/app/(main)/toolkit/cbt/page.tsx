@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
+import { apiFetch } from '@/lib/api'
 
 export default function CBTPage() {
   const router = useRouter()
@@ -28,40 +29,48 @@ export default function CBTPage() {
     if (!canGenerate) return
     setGenerating(true)
 
-    const after = Math.max(1, Math.round(distress * 0.5))
-
-    const observation = `你注意到了"${thought.trim().slice(0, 30)}"这个想法带来的困扰。但你也找到了相反的证据——${evidenceAgainst.trim().slice(0, 50)}。这说明你有能力看到事情的另一面。${
-      friendAdvice.trim()
-        ? `你对朋友说的话——"${friendAdvice.trim().slice(0, 40)}"——其实也是你内心的智慧。`
-        : ''
-    }试着用同样的温柔对待自己。`
-
     try {
-      await fetch('/api/cbt', {
+      // 调用后端 AI 分析端点
+      const res = await apiFetch('/cbt/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           thought,
-          distress_before: distress,
-          distress_after: after,
-          evidence_for: evidenceFor,
-          evidence_against: evidenceAgainst,
+          score_before: distress,
+          evidence: evidenceFor,
+          counter_evidence: evidenceAgainst,
           friend_advice: friendAdvice,
           reframe,
-          insight: observation,
         }),
       })
-    } catch {
-      /* continue showing result even if save fails */
-    }
 
-    setInsight({
-      before: distress,
-      after,
-      observation,
-      newCognition: reframe,
-    })
-    setGenerating(false)
+      if (res.ok) {
+        const result = await res.json()
+        const data = result.data ?? result
+        setInsight({
+          before: distress,
+          after: data.score_after ?? Math.max(1, distress - 2),
+          observation: data.observation ?? '分析生成中遇到问题，但你完成认知重构这个过程本身就很有价值。',
+          newCognition: reframe,
+        })
+      } else {
+        // API 失败时使用基础分析
+        setInsight({
+          before: distress,
+          after: Math.max(1, distress - 2),
+          observation: `能感受到这件事给你带来了 ${distress}/10 的难受。但你已经迈出了重要的一步——正视这个想法并找到了反面证据"${evidenceAgainst.slice(0, 40)}"。你重新得出的看法更平衡、更贴近现实，这本身就是一种力量。`,
+          newCognition: reframe,
+        })
+      }
+    } catch {
+      setInsight({
+        before: distress,
+        after: Math.max(1, distress - 2),
+        observation: `能感受到这件事给你带来了 ${distress}/10 的难受。但你已经迈出了重要的一步——正视这个想法并找到了反面证据。你重新得出的看法更平衡、更贴近现实，这本身就是一种力量。`,
+        newCognition: reframe,
+      })
+    } finally {
+      setGenerating(false)
+    }
   }
 
   function handleReset() {
@@ -75,7 +84,7 @@ export default function CBTPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0 sticky top-0 z-10">
         <button
@@ -99,12 +108,12 @@ export default function CBTPage() {
         )}
       </header>
 
-      <div className="px-page-x py-page-y">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y">
         {!insight ? (
           <div className="space-y-5">
             {/* Intro */}
             <p className="text-body-md text-text-secondary leading-relaxed">
-              认知重构帮你发现思维中的"自动化偏差"，用更平衡的方式看待问题。
+              认知重构帮你发现思维中的&ldquo;自动化偏差&rdquo;，用更平衡的方式看待问题。
             </p>
 
             {/* Step 1: Thought */}
@@ -127,7 +136,7 @@ export default function CBTPage() {
                 2. 难受程度（1-10）
               </label>
               <div className="flex items-center gap-3">
-                <span className="text-body-sm text-text-muted w-4">1</span>
+                <span className="text-body-sm text-text-muted">一点点</span>
                 <input
                   type="range"
                   min={1}
@@ -136,9 +145,9 @@ export default function CBTPage() {
                   onChange={(e) => setDistress(Number(e.target.value))}
                   className="flex-1 accent-primary"
                 />
-                <span className="text-body-sm text-text-muted w-4">10</span>
-                <span className="text-body-md text-primary font-medium w-6 text-center">
-                  {distress}
+                <span className="text-body-sm text-text-muted">非常</span>
+                <span className="text-body-md text-primary font-medium w-10 text-center">
+                  {distress}/10
                 </span>
               </div>
             </div>
@@ -232,7 +241,7 @@ export default function CBTPage() {
             </div>
 
             {/* Observation */}
-            <div className="bg-accent/[0.08] border border-accent/20 rounded-card p-4">
+            <div className="border border-border rounded-card p-4" style={{ background: 'linear-gradient(135deg, rgba(123,174,132,0.08), rgba(139,115,85,0.06))' }}>
               <h3 className="text-body-md font-medium text-text-primary mb-2">
                 粘豆包的观察
               </h3>

@@ -105,7 +105,7 @@ export default function BreathingPage() {
 
   if (completed) {
     return (
-      <div className="min-h-screen bg-background flex flex-col max-w-[430px] mx-auto">
+      <div className="flex flex-col h-full bg-background">
         <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0">
           <button
             onClick={() => router.push('/toolkit')}
@@ -141,7 +141,7 @@ export default function BreathingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-[430px] mx-auto">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0">
         <button

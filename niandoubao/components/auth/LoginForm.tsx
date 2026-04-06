@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User, Lock, ChevronRight, UserPlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { apiFetch } from '@/lib/api'
 
 export function LoginForm() {
   const router = useRouter()
@@ -23,7 +24,7 @@ export function LoginForm() {
 
     if (isSignUp) {
       // 注册：调用服务端 API，用管理员权限创建已确认用户
-      const res = await fetch('/api/auth/signup', {
+      const res = await fetch('/projects/zhandoubao/api/auth/signup/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -60,6 +61,20 @@ export function LoginForm() {
         return
       }
     }
+
+    // 登录后检查 MBTI，未设置则去 onboarding
+    try {
+      const mbtiRes = await apiFetch('/mbti')
+      if (mbtiRes.ok) {
+        const mbti = await mbtiRes.json()
+        const mtype = mbti.data?.mbti_type || mbti.mbti_type
+        if (!mtype) {
+          router.push('/onboarding')
+          router.refresh()
+          return
+        }
+      }
+    } catch { /* 检查失败直接进聊天 */ }
 
     router.push('/chat')
     router.refresh()

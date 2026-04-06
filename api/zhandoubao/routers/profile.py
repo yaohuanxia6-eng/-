@@ -19,6 +19,7 @@ async def get_profile(user_id: str = Depends(get_current_user)):
         id=row["id"],
         email=row["email"],
         nickname=row["nickname"] or "小豆包",
+        avatar=row.get("avatar") or "🐰",
         reminder_email=row["reminder_email"],
         reminder_time=str(row["reminder_time"])[:5] if row["reminder_time"] else "21:00",
         reminder_enabled=bool(row["reminder_enabled"]),
@@ -39,6 +40,9 @@ async def update_profile(body: ProfileUpdate, user_id: str = Depends(get_current
             if body.nickname is not None:
                 updates.append("nickname = %s")
                 values.append(body.nickname)
+            if body.avatar is not None:
+                updates.append("avatar = %s")
+                values.append(body.avatar)
             if body.reminder_email is not None:
                 updates.append("reminder_email = %s")
                 values.append(body.reminder_email)
@@ -54,8 +58,8 @@ async def update_profile(body: ProfileUpdate, user_id: str = Depends(get_current
                 await cur.execute(sql, values)
         else:
             await cur.execute(
-                "INSERT INTO user_profiles (id, nickname, reminder_email, reminder_time, reminder_enabled) VALUES (%s, %s, %s, %s, %s)",
-                (user_id, body.nickname or "小豆包", body.reminder_email, body.reminder_time or "21:00", int(body.reminder_enabled or False)),
+                "INSERT INTO user_profiles (id, nickname, avatar, reminder_email, reminder_time, reminder_enabled) VALUES (%s, %s, %s, %s, %s, %s)",
+                (user_id, body.nickname or "小豆包", body.avatar or "🐰", body.reminder_email, body.reminder_time or "21:00", int(body.reminder_enabled or False)),
             )
 
     return ApiResponse(msg="保存成功")

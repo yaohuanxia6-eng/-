@@ -24,8 +24,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ToastProvider>
-      <div className="flex flex-col min-h-screen max-w-[430px] mx-auto bg-background relative">
-        <div className={hideNav ? 'flex-1' : 'flex-1 pb-14'}>
+      <div className="flex flex-col h-screen max-w-[430px] mx-auto bg-background relative overflow-hidden">
+        <div className={hideNav ? 'flex flex-col flex-1 overflow-hidden' : 'flex flex-col flex-1 overflow-hidden pb-14'}>
           {children}
         </div>
         {!hideNav && <BottomNav />}

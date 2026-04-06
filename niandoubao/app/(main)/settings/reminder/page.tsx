@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { styles as s } from '@/lib/styles'
+import { apiFetch } from '@/lib/api'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ReminderPage() {
@@ -18,9 +19,10 @@ export default function ReminderPage() {
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      const res = await fetch('/api/profile')
+      const res = await apiFetch('/profile')
       if (res.ok) {
-        const p = await res.json()
+        const raw = await res.json()
+        const p = raw.data ?? raw
         setEmail(p.reminder_email ?? user?.email ?? '')
         setTime(p.reminder_time ?? '21:00')
         setEnabled(p.reminder_enabled ?? false)
@@ -31,9 +33,8 @@ export default function ReminderPage() {
 
   async function handleSave() {
     setSaving(true)
-    const res = await fetch('/api/profile', {
+    const res = await apiFetch('/profile', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reminder_email: email, reminder_time: time, reminder_enabled: enabled }),
     })
     setSaving(false)
@@ -41,14 +42,14 @@ export default function ReminderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+    <div className="flex flex-col h-full bg-background">
       <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 sticky top-0 z-10">
         <button onClick={() => router.back()} className="text-primary -ml-1 p-1"><ChevronLeft size={22} /></button>
         <span className="flex-1 text-center text-body-md font-medium text-text-primary">每日提醒</span>
         <div className="w-6" />
       </header>
 
-      <div className="px-page-x py-page-y space-y-5">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y space-y-5 max-w-md mx-auto w-full">
         {/* Toggle */}
         <div className="flex items-center justify-between">
           <div>

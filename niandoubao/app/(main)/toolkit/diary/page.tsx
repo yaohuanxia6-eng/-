@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
+import { apiFetch } from '@/lib/api'
 
 const moods = [
   { emoji: '😰', label: '焦虑' },
@@ -44,22 +45,20 @@ export default function DiaryPage() {
     if (!canSave) return
     setSaving(true)
     try {
-      await fetch('/api/diary', {
+      await apiFetch('/diary', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mood: selectedMood,
-          mood_label: selectedMoodLabel,
+          mood: selectedMoodLabel,
+          mood_emoji: selectedMood,
           mode: tab,
-          content:
-            tab === 'guided'
-              ? {
-                  what_happened: guided.what_happened || '',
-                  body_reaction: guided.body_reaction || '',
-                  thoughts: guided.thoughts || '',
-                  self_talk: guided.self_talk || '',
-                }
-              : { free_text: freeText },
+          ...(tab === 'guided'
+            ? {
+                event: guided.what_happened || '',
+                body_reaction: guided.body_reaction || '',
+                thought: guided.thoughts || '',
+                self_talk: guided.self_talk || '',
+              }
+            : { free_text: freeText }),
         }),
       })
       setSaved(true)
@@ -74,7 +73,7 @@ export default function DiaryPage() {
     const now = new Date()
     const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`
     return (
-      <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+      <div className="flex flex-col h-full bg-background">
         <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0">
           <button onClick={() => router.push('/toolkit')} className="flex items-center text-primary -ml-1 p-1">
             <ChevronLeft size={22} />
@@ -83,7 +82,7 @@ export default function DiaryPage() {
           <div className="w-6" />
         </header>
 
-        <div className="px-page-x py-page-y flex flex-col items-center">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y flex flex-col items-center">
           <div className="bg-surface rounded-card shadow-card border border-border p-6 text-center w-full">
             <span className="text-4xl block mb-3">{selectedMood}</span>
             <p className="text-body-md text-text-primary font-medium mb-1">{dateStr}</p>
@@ -105,7 +104,7 @@ export default function DiaryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0 sticky top-0 z-10">
         <button onClick={() => router.back()} className="flex items-center text-primary -ml-1 p-1">
@@ -115,7 +114,7 @@ export default function DiaryPage() {
         <div className="w-6" />
       </header>
 
-      <div className="px-page-x py-page-y space-y-5">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y space-y-5">
         {/* Tabs */}
         <div className="flex bg-surface-2 rounded-btn p-1 gap-1">
           {(['guided', 'free'] as const).map((t) => (

@@ -15,6 +15,7 @@ class ApiResponse(BaseModel):
 
 class ProfileUpdate(BaseModel):
     nickname: Optional[str] = Field(None, max_length=50)
+    avatar: Optional[str] = Field(None, max_length=10)
     reminder_email: Optional[str] = None
     reminder_time: Optional[str] = None  # HH:MM 格式
     reminder_enabled: Optional[bool] = None
@@ -24,6 +25,7 @@ class ProfileOut(BaseModel):
     id: str
     email: Optional[str] = None
     nickname: str = "小豆包"
+    avatar: Optional[str] = "🐰"
     reminder_email: Optional[str] = None
     reminder_time: str = "21:00"
     reminder_enabled: bool = False
@@ -53,6 +55,29 @@ class SessionOut(BaseModel):
     created_at: Optional[datetime] = None
 
 
+class SessionCompleteRequest(BaseModel):
+    """完成会话时可选更新 messages 和 status"""
+    messages: Optional[list[MessageItem]] = None
+    status: Optional[str] = None
+
+
+class SessionMessagesUpdate(BaseModel):
+    """AI 回复后保存聊天消息"""
+    messages: list[MessageItem]
+    micro_action: Optional[str] = None
+    emotion_type: Optional[str] = None
+
+
+class SessionHistoryItem(BaseModel):
+    """历史会话列表项（不含 messages）"""
+    id: str
+    session_date: date
+    emotion_type: Optional[str] = None
+    micro_action: Optional[str] = None
+    micro_action_done: bool = False
+    status: str = "in_progress"
+
+
 # ── 对话请求 ──
 
 class ChatRequest(BaseModel):
@@ -72,6 +97,11 @@ class MemoryOut(BaseModel):
     user_id: str
     key_facts: list[MemoryFact] = []
     updated_at: Optional[datetime] = None
+
+
+class MemoryExtractRequest(BaseModel):
+    """记忆提炼请求"""
+    session_id: str
 
 
 # ── MBTI ──

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronRight, UserRound, Brain, Bell, Shield, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { apiFetch } from '@/lib/api'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -12,6 +13,7 @@ export default function SettingsPage() {
 
   const [userEmail, setUserEmail] = useState('')
   const [nickname, setNickname] = useState('')
+  const [avatar, setAvatar] = useState('🐰')
   const [reminderEnabled, setReminderEnabled] = useState(false)
   const [reminderTime, setReminderTime] = useState('21:00')
   const [loggingOut, setLoggingOut] = useState(false)
@@ -23,17 +25,20 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user?.email) setUserEmail(user.email)
       const [profileRes, mbtiRes] = await Promise.all([
-        fetch('/api/profile'),
-        fetch('/api/mbti'),
+        apiFetch('/profile'),
+        apiFetch('/mbti'),
       ])
       if (profileRes.ok) {
-        const p = await profileRes.json()
+        const raw = await profileRes.json()
+        const p = raw.data ?? raw
         setNickname(p.nickname ?? '')
+        setAvatar(p.avatar ?? '🐰')
         setReminderEnabled(p.reminder_enabled ?? false)
         setReminderTime(p.reminder_time ?? '21:00')
       }
       if (mbtiRes.ok) {
-        const m = await mbtiRes.json()
+        const raw = await mbtiRes.json()
+        const m = raw.data ?? raw
         setMbtiType(m.mbti_type ?? '')
       }
       setProfileLoaded(true)
@@ -49,8 +54,8 @@ export default function SettingsPage() {
   }
 
   // Reusable setting row
-  function SettingRow({ icon, iconBg, iconColor, label, detail, onClick, href }: {
-    icon: React.ReactNode; iconBg: string; iconColor: string;
+  function SettingRow({ icon, iconBg, label, detail, onClick, href }: {
+    icon: React.ReactNode; iconBg: string;
     label: string; detail?: string;
     onClick?: () => void; href?: string;
   }) {
@@ -81,8 +86,8 @@ export default function SettingsPage() {
           onClick={() => router.push('/settings/profile')}
           className="w-full bg-surface rounded-card shadow-card p-4 flex items-center gap-4 hover:bg-surface-2/30 transition-colors active:bg-surface-2/50"
         >
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary text-title-md font-serif font-semibold flex-shrink-0">
-            {(nickname || '?').charAt(0)}
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-[28px] flex-shrink-0">
+            {avatar || '🐰'}
           </div>
           <div className="flex-1 min-w-0 text-left">
             <p className="text-[17px] text-text-primary font-semibold truncate">
@@ -97,20 +102,20 @@ export default function SettingsPage() {
         <div className="bg-surface rounded-card shadow-card divide-y divide-border">
           <SettingRow
             icon={<UserRound size={17} className="text-[#7C4DFF]" strokeWidth={1.8} />}
-            iconBg="bg-[#EDE7F6]" iconColor=""
+            iconBg="bg-[#EDE7F6]"
             label="MBTI 偏好"
             detail={mbtiType || '未设置'}
             onClick={() => router.push('/onboarding')}
           />
           <SettingRow
             icon={<Brain size={17} className="text-[#2196F3]" strokeWidth={1.8} />}
-            iconBg="bg-[#E3F2FD]" iconColor=""
+            iconBg="bg-[#E3F2FD]"
             label="粘豆包的记忆"
             onClick={() => router.push('/settings/memory')}
           />
           <SettingRow
             icon={<Bell size={17} className="text-[#F57C00]" strokeWidth={1.8} />}
-            iconBg="bg-[#FFF3E0]" iconColor=""
+            iconBg="bg-[#FFF3E0]"
             label="每日提醒"
             detail={reminderEnabled ? `${reminderTime} 已开启` : '未开启'}
             onClick={() => router.push('/settings/reminder')}
@@ -121,7 +126,7 @@ export default function SettingsPage() {
         <div className="bg-surface rounded-card shadow-card divide-y divide-border">
           <SettingRow
             icon={<Shield size={17} className="text-[#9E9E9E]" strokeWidth={1.8} />}
-            iconBg="bg-[#F5F5F5]" iconColor=""
+            iconBg="bg-[#F5F5F5]"
             label="隐私与协议"
             href="/privacy"
           />

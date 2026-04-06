@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { DiaryEntry } from '@/types'
 import { useToast } from '@/components/ui/toast'
+import { apiFetch } from '@/lib/api'
 
 export default function DiaryHistoryPage() {
   const toast = useToast()
@@ -15,10 +16,10 @@ export default function DiaryHistoryPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/diary')
+        const res = await apiFetch('/diary')
         if (res.ok) {
           const data = await res.json()
-          setEntries(data.entries ?? data ?? [])
+          setEntries(data.data?.items ?? data.items ?? data.entries ?? [])
         }
       } catch {
         /* silent */
@@ -35,7 +36,7 @@ export default function DiaryHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0 sticky top-0 z-10">
         <button onClick={() => router.back()} className="flex items-center text-primary -ml-1 p-1">
@@ -45,7 +46,7 @@ export default function DiaryHistoryPage() {
         <div className="w-6" />
       </header>
 
-      <div className="px-page-x py-page-y space-y-3">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y space-y-3">
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -74,8 +75,8 @@ export default function DiaryHistoryPage() {
               {/* Date & mood */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{entry.mood}</span>
-                  <span className="text-body-sm text-text-secondary font-medium">{entry.mood_label}</span>
+                  <span className="text-lg">{entry.mood_emoji ?? entry.mood}</span>
+                  <span className="text-body-sm text-text-secondary font-medium">{entry.mood_label ?? entry.mood}</span>
                 </div>
                 <span className="text-label text-text-muted">{formatDate(entry.created_at)}</span>
               </div>
@@ -84,33 +85,33 @@ export default function DiaryHistoryPage() {
               <div className="space-y-2 text-body-sm text-text-primary">
                 {entry.mode === 'guided' ? (
                   <>
-                    {entry.content.what_happened && (
+                    {(entry.event || entry.content?.what_happened) && (
                       <div>
                         <span className="text-text-muted">发生了什么：</span>
-                        <span>{entry.content.what_happened}</span>
+                        <span>{entry.event || entry.content?.what_happened}</span>
                       </div>
                     )}
-                    {entry.content.body_reaction && (
+                    {(entry.body_reaction || entry.content?.body_reaction) && (
                       <div>
                         <span className="text-text-muted">身体反应：</span>
-                        <span>{entry.content.body_reaction}</span>
+                        <span>{entry.body_reaction || entry.content?.body_reaction}</span>
                       </div>
                     )}
-                    {entry.content.thoughts && (
+                    {(entry.thought || entry.content?.thoughts) && (
                       <div>
                         <span className="text-text-muted">脑海里的想法：</span>
-                        <span>{entry.content.thoughts}</span>
+                        <span>{entry.thought || entry.content?.thoughts}</span>
                       </div>
                     )}
-                    {entry.content.self_talk && (
+                    {(entry.self_talk || entry.content?.self_talk) && (
                       <div>
                         <span className="text-text-muted">对自己说：</span>
-                        <span>{entry.content.self_talk}</span>
+                        <span>{entry.self_talk || entry.content?.self_talk}</span>
                       </div>
                     )}
                   </>
                 ) : (
-                  <p>{entry.content.free_text}</p>
+                  <p>{entry.free_text || entry.content?.free_text}</p>
                 )}
               </div>
 

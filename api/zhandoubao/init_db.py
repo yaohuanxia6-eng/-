@@ -22,6 +22,7 @@ TABLES = [
         id          VARCHAR(36) PRIMARY KEY COMMENT 'Supabase user ID',
         email       VARCHAR(255) DEFAULT NULL,
         nickname    VARCHAR(50) DEFAULT '小豆包',
+        avatar      VARCHAR(10) DEFAULT '🐰',
         reminder_email VARCHAR(255) DEFAULT NULL,
         reminder_time  TIME DEFAULT '21:00:00',
         reminder_enabled TINYINT(1) DEFAULT 0,

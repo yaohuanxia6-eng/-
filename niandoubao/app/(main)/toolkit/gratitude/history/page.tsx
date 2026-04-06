@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { GratitudeEntry } from '@/types'
+import { apiFetch } from '@/lib/api'
 
 export default function GratitudeHistoryPage() {
   const router = useRouter()
@@ -13,10 +14,10 @@ export default function GratitudeHistoryPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/gratitude')
+        const res = await apiFetch('/gratitude')
         if (res.ok) {
           const data = await res.json()
-          setEntries(data.entries ?? data ?? [])
+          setEntries(data.data?.items ?? data.items ?? data.entries ?? [])
         }
       } catch {
         /* silent */
@@ -29,11 +30,11 @@ export default function GratitudeHistoryPage() {
 
   function formatDate(dateStr: string) {
     const d = new Date(dateStr)
-    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+    return `${d.getMonth() + 1}月${d.getDate()}日`
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0 sticky top-0 z-10">
         <button onClick={() => router.back()} className="flex items-center text-primary -ml-1 p-1">
@@ -43,7 +44,8 @@ export default function GratitudeHistoryPage() {
         <div className="w-6" />
       </header>
 
-      <div className="px-page-x py-page-y space-y-3">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y space-y-3">
+        <h1 className="font-serif text-[22px] font-bold text-text-primary mb-1">感恩记录详情</h1>
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (

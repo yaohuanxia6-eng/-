@@ -1,25 +1,22 @@
-import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-
 export const runtime = 'nodejs'
+
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8091/api/zhandoubao'
 
 /** GET /api/memory — 获取用户记忆 */
 export async function GET() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { data: { session } } = await supabase.auth.getSession()
+  const accessToken = session?.access_token
+  if (!accessToken) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const admin = createAdminClient()
-  const { data } = await admin
-    .from('memory_summary')
-    .select('key_facts, updated_at')
-    .eq('user_id', user.id)
-    .single()
-
-  return NextResponse.json({
-    user_id: user.id,
-    key_facts: data?.key_facts ?? [],
-    updated_at: data?.updated_at ?? null,
+  const res = await fetch(`${API}/memory`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
   })
+  const data = await res.json()
+  return NextResponse.json(data, { status: res.status })
 }

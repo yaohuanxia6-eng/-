@@ -8,11 +8,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const accessToken = session?.access_token
+  if (!accessToken) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const res = await fetch(`${API}/diary/${params.id}`, {
-    headers: { Authorization: `Bearer ${session.access_token}` },
+    headers: { Authorization: `Bearer ${accessToken}` },
   })
   const data = await res.json()
   return NextResponse.json(data, { status: res.status })
@@ -23,12 +26,15 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const accessToken = session?.access_token
+  if (!accessToken) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const res = await fetch(`${API}/diary/${params.id}`, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${session.access_token}` },
+    headers: { Authorization: `Bearer ${accessToken}` },
   })
   const data = await res.json()
   return NextResponse.json(data, { status: res.status })

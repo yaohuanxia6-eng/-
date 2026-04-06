@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
 import Link from 'next/link'
 import { ChevronLeft, Plus } from 'lucide-react'
+import { apiFetch } from '@/lib/api'
 
 const ICONS = ['🌸', '🌟', '💖', '🌈', '🍀', '✨', '🦋', '🌻']
 const CHALLENGE_DAYS = 21
@@ -22,10 +23,10 @@ export default function GratitudePage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/gratitude')
+        const res = await apiFetch('/gratitude')
         if (res.ok) {
           const data = await res.json()
-          const entries = data.entries ?? data ?? []
+          const entries = data.data?.items ?? data.items ?? data.entries ?? []
           setTotalDays(entries.length)
         }
       } catch {
@@ -56,9 +57,8 @@ export default function GratitudePage() {
     setSaving(true)
     try {
       const filledItems = items.filter((i) => i.trim())
-      await fetch('/api/gratitude', {
+      await apiFetch('/gratitude', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: filledItems }),
       })
       setSaved(true)
@@ -75,7 +75,7 @@ export default function GratitudePage() {
   if (saved) {
     const filledItems = items.filter((i) => i.trim())
     return (
-      <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+      <div className="flex flex-col h-full bg-background">
         <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0">
           <button onClick={() => router.push('/toolkit')} className="flex items-center text-primary -ml-1 p-1">
             <ChevronLeft size={22} />
@@ -84,7 +84,7 @@ export default function GratitudePage() {
           <div className="w-6" />
         </header>
 
-        <div className="px-page-x py-page-y flex flex-col items-center">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y flex flex-col items-center max-w-md mx-auto w-full">
           <div className="bg-surface rounded-card shadow-card border border-border p-6 text-center w-full">
             <span className="text-4xl block mb-3">🌟</span>
             <h2 className="font-serif text-title-md text-primary mb-2">
@@ -114,9 +114,9 @@ export default function GratitudePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background max-w-[430px] mx-auto">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0 sticky top-0 z-10">
+      <header className="h-14 bg-white/90 border-b border-border flex items-center px-5 flex-shrink-0 sticky top-0 z-10" style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
         <button onClick={() => router.back()} className="flex items-center text-primary -ml-1 p-1">
           <ChevronLeft size={22} />
         </button>
@@ -124,7 +124,7 @@ export default function GratitudePage() {
         <div className="w-6" />
       </header>
 
-      <div className="px-page-x py-page-y space-y-5">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-page-x py-page-y space-y-5 max-w-md mx-auto w-full">
         {/* 21-day challenge */}
         <div className="bg-surface rounded-card shadow-card border border-border p-4">
           <div className="flex items-center justify-between mb-3">
@@ -136,40 +136,46 @@ export default function GratitudePage() {
             </span>
           </div>
           {/* Progress dots */}
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {Array.from({ length: CHALLENGE_DAYS }).map((_, i) => (
               <div
                 key={i}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  i < progressDays ? 'bg-accent' : 'bg-primary/10'
-                }`}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  i < progressDays ? 'bg-accent' : 'bg-border'
+                } ${i === progressDays ? 'animate-pulse' : ''}`}
               />
             ))}
           </div>
+          <p className="text-body-sm text-text-muted leading-relaxed">
+            坚持21天后，感恩会变成你的思维习惯。研究表明这能显著提升幸福感和睡眠质量。
+          </p>
         </div>
 
         {/* Gratitude items */}
-        <div className="space-y-3">
-          {items.map((item, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <span className="text-lg mt-2.5 flex-shrink-0">
-                {ICONS[i % ICONS.length]}
-              </span>
-              <textarea
-                className="bg-surface border border-border rounded-input px-4 py-3 text-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-light focus:ring-1 focus:ring-primary/20 w-full transition-all duration-200 resize-none"
-                rows={2}
-                placeholder={
-                  i === 0
-                    ? '今天让你感到开心或感激的事…'
-                    : i === 1
-                    ? '哪怕很小的事也值得记录…'
-                    : '还有什么让你微笑的瞬间…'
-                }
-                value={item}
-                onChange={(e) => updateItem(i, e.target.value)}
-              />
-            </div>
-          ))}
+        <div className="space-y-4">
+          {items.map((item, i) => {
+            const labels = ['第一件好事', '第二件好事', '第三件好事', '第四件好事', '第五件好事', '第六件好事', '第七件好事', '第八件好事']
+            const placeholders = [
+              '今天有什么让你觉得还不错的事？',
+              '也许很小，一个微笑、一口好吃的…',
+              '想想有谁或什么事让你心存感激',
+              '还有什么让你微笑的瞬间…',
+            ]
+            return (
+              <div key={i}>
+                <label className="block text-body-sm font-medium text-text-primary mb-1.5">
+                  {ICONS[i % ICONS.length]} {labels[i] ?? `第${i + 1}件好事`}
+                </label>
+                <textarea
+                  className="bg-surface border border-border rounded-input px-4 py-3 text-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-light focus:ring-1 focus:ring-primary/20 w-full transition-all duration-200 resize-none"
+                  rows={2}
+                  placeholder={placeholders[i] ?? placeholders[3]}
+                  value={item}
+                  onChange={(e) => updateItem(i, e.target.value)}
+                />
+              </div>
+            )
+          })}
         </div>
 
         {/* Add button */}
@@ -193,14 +199,16 @@ export default function GratitudePage() {
         </button>
 
         {/* Link to history */}
-        <div className="text-center pb-4">
-          <Link
-            href="/toolkit/gratitude/history"
-            className="text-body-sm text-primary hover:underline underline-offset-2"
-          >
-            过往记录 · 查看详情 →
-          </Link>
-        </div>
+        <Link
+          href="/toolkit/gratitude/history"
+          className="bg-surface rounded-card shadow-card border border-border p-4 flex items-center justify-between hover:bg-surface-2/50 transition-colors"
+        >
+          <div>
+            <p className="text-body-md font-medium text-text-primary">过往记录</p>
+            <p className="text-body-sm text-text-muted">已记录 {loading ? '…' : totalDays} 天</p>
+          </div>
+          <span className="text-body-sm text-primary">查看详情 →</span>
+        </Link>
       </div>
     </div>
   )

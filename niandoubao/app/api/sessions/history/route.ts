@@ -1,25 +1,22 @@
-import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-
 export const runtime = 'nodejs'
 
-/** GET /api/sessions/history — 近 90 天会话记录（用于情绪可视化） */
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8091/api/zhandoubao'
+
+/** GET /api/sessions/history — 近 90 天会话记录 */
 export async function GET() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { data: { session } } = await supabase.auth.getSession()
+  const accessToken = session?.access_token
+  if (!accessToken) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const admin = createAdminClient()
-  const since = new Date(Date.now() - 90 * 86_400_000).toISOString().split('T')[0]
-
-  const { data, error } = await admin
-    .from('sessions')
-    .select('id, session_date, emotion_type, micro_action, micro_action_done, status, created_at')
-    .eq('user_id', user.id)
-    .gte('session_date', since)
-    .order('session_date', { ascending: true })
-
-  if (error) return NextResponse.json({ error: '获取记录失败' }, { status: 500 })
-  return NextResponse.json(data ?? [])
+  const res = await fetch(`${API}/sessions/history`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  const data = await res.json()
+  return NextResponse.json(data, { status: res.status })
 }
